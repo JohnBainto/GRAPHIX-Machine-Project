@@ -9,11 +9,10 @@ void Skybox::draw(Camera& camera) {
     glm::mat4 skybox_view = glm::mat4(1.f);
     skybox_view = glm::mat4(glm::mat3(camera.getViewMatrix()));
 
-    unsigned int skybox_projectionLoc = glGetUniformLocation(shader.shader_program, "projection");
+    
     glm::mat4 projection_matrix = camera.getProjectionMatrix();
-    glUniformMatrix4fv(skybox_projectionLoc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
-    unsigned int skybox_viewLoc = glGetUniformLocation(shader.shader_program, "view");
-    glUniformMatrix4fv(skybox_viewLoc, 1, GL_FALSE, glm::value_ptr(skybox_view));
+    shader.setProjection(projection_matrix);
+    shader.setView(skybox_view);
 
     glBindVertexArray(skybox_vao);
     glActiveTexture(GL_TEXTURE0);
