@@ -1,6 +1,12 @@
 #pragma once
 
+#include <fstream>
+#include <sstream>
+
 #include "common.h"
+
+#include "light.h"
+#include "texture.h"
 
 // Base wrapper object for a shader
 class Shader {
@@ -59,6 +65,13 @@ public:
         unsigned int projection_loc = glGetUniformLocation(shader_program, "projection");
         glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
     }
+};
+
+class SkyboxShader: public Shader {
+public:
+    SkyboxShader(const char* vert_path, const char* frag_path): Shader(vert_path, frag_path) {}
+
+    void setTransform(glm::mat4& transformation_matrix) = delete;
 };
 
 // Shader program that applies a texture, point lighting and directional lighting to an object

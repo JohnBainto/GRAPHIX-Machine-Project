@@ -1,18 +1,5 @@
-// Amos Rafael J. Cacha
-// GRAPHIX S13
-
-//#include <glad/glad.h>
-//#include <GLFW/glfw3.h>
-
-//#include <glm/glm.hpp>
-//#include <glm/gtc/matrix_transform.hpp>
-//#include <glm/gtc/type_ptr.hpp>
-
 #define TINYOBJLOADER_IMPLEMENTATION
-//#include "tiny_obj_loader.h"
-
 #define STB_IMAGE_IMPLEMENTATION
-//#include "stb_image.h"
 
 #include "common.h"
 
@@ -22,8 +9,7 @@
 #include "texture.h"
 #include "model.h"
 #include "shader.h"
-
-#include <cmath>
+#include "skybox.h"
 
 // Overloaded draw function to a draw a model with lighting and texture
 void drawObject(Model3D& object, Texture tex, Camera& camera, TexLightingShader& shader, 
@@ -223,6 +209,8 @@ int main(void) {
         {0.04f, 0.04f, 0.04f}   // XYZ scale
     };
 
+    Skybox skybox;
+
     // Pass state object to input control functions
     struct State state;
     glfwSetWindowUserPointer(window, &state);
@@ -241,6 +229,8 @@ int main(void) {
         updateLight(plight, dlight, lightbulb, state);
         Camera* active_cam = NULL;
         active_cam = updateCamera(perspective_camera, orthographic_camera, state);
+
+        skybox.draw(*active_cam);
 
         // Draw objects
         drawObject(firehydrant, firehydrant_tex, *active_cam, texlighting_shader, plight, dlight);
