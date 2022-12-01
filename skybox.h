@@ -5,14 +5,14 @@
 #include "camera.h"
 
 static const float skybox_vertices[] {
-        -1.f, -1.f, 1.f, //0
-        1.f, -1.f, 1.f,  //1
-        1.f, -1.f, -1.f, //2
-        -1.f, -1.f, -1.f,//3
-        -1.f, 1.f, 1.f,  //4
-        1.f, 1.f, 1.f,   //5
-        1.f, 1.f, -1.f,  //6
-        -1.f, 1.f, -1.f  //7
+    -1.f, -1.f, 1.f, //0
+    1.f, -1.f, 1.f,  //1
+    1.f, -1.f, -1.f, //2
+    -1.f, -1.f, -1.f,//3
+    -1.f, 1.f, 1.f,  //4
+    1.f, 1.f, 1.f,   //5
+    1.f, 1.f, -1.f,  //6
+    -1.f, 1.f, -1.f  //7
 };
 
 static const unsigned int skybox_indices[] {
@@ -36,12 +36,12 @@ static const unsigned int skybox_indices[] {
 };
 
 static const std::string face_skybox[] {
-        "Skybox/rainbow_rt.png",
-        "Skybox/rainbow_lf.png",
-        "Skybox/rainbow_up.png",
-        "Skybox/rainbow_dn.png",
-        "Skybox/rainbow_ft.png",
-        "Skybox/rainbow_bk.png"
+    "Skybox/rainbow_rt.png",
+    "Skybox/rainbow_lf.png",
+    "Skybox/rainbow_up.png",
+    "Skybox/rainbow_dn.png",
+    "Skybox/rainbow_ft.png",
+    "Skybox/rainbow_bk.png"
 };
 
 class Skybox {
