@@ -36,12 +36,12 @@ static const unsigned int skybox_indices[] {
 };
 
 static const std::string face_skybox[] {
-        "Skybox/rainbow_rt.png",
-        "Skybox/rainbow_lf.png",
-        "Skybox/rainbow_up.png",
-        "Skybox/rainbow_dn.png",
-        "Skybox/rainbow_ft.png",
-        "Skybox/rainbow_bk.png"
+        "Skybox/uw_rt.jpg",
+        "Skybox/uw_lf.jpg",
+        "Skybox/uw_up.jpg",
+        "Skybox/uw_dn.jpg",
+        "Skybox/uw_ft.jpg",
+        "Skybox/uw_bk.jpg"
 };
 
 class Skybox {
