@@ -48,11 +48,11 @@ public:
         // Set the initial camera position to be towards the screen facing center
         yaw = 90.f;
         pitch = 0.f;
-        move();
+        rotate();
     }
 
     // Adjusts the horizontal and vertical rotation (pitch and yaw) of this camera by an amount
-    inline void move(float h_amount = 0.f, float v_amount = 0.f) {
+    inline void rotate(float h_amount = 0.f, float v_amount = 0.f) {
         yaw += h_amount;
         pitch += v_amount;
         // Bind the range of the pitch and yaw to be between -89.9 to 89.9 and -360 to 360 respectively
@@ -83,5 +83,9 @@ public:
     // Gets the orthographical projection matrix of this camera instance's settings
     inline glm::mat4 getProjectionMatrix() {
         return glm::ortho(xmin, xmax, ymin, ymax, znear, zfar);
+    }
+
+    inline glm::mat4 getSkyboxProjectionMatrix() {
+        return glm::ortho(-1.f, 1.f, -1.f, 1.f, znear, zfar);
     }
 };

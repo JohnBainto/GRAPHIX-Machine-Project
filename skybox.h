@@ -90,5 +90,6 @@ public:
         stbi_set_flip_vertically_on_load(true);
     }
 
+    void draw(OrthographicCamera& camera);
     void draw(Camera& camera);
 };
