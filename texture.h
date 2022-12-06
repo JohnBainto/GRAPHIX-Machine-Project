@@ -17,9 +17,11 @@ typedef struct Texture {
         glGenTextures(1, &texture);
         glActiveTexture(GL_TEXTURE0 + tex_unit);
         glBindTexture(GL_TEXTURE_2D, texture);
-        bool ispng = std::strcmp(tex_path + (std::strlen(tex_path) < 3 ? 0 : std::strlen(tex_path) - 3), "png") == 0;
-        GLint format = ispng ? GL_RGBA : GL_RGB;
-        glTexImage2D(GL_TEXTURE_2D, 0, format, img_width, img_height, 0, format, GL_UNSIGNED_BYTE, tex_bytes);
+        
+        if (color_channels >= 4)
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_width, img_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_bytes);
+        else
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img_width, img_height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex_bytes);
 
         glGenerateMipmap(GL_TEXTURE_2D);
         glEnable(GL_DEPTH_TEST);
