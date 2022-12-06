@@ -10,7 +10,7 @@ void Skybox::draw(Camera& camera) {
     skybox_view = glm::mat4(glm::mat3(camera.getViewMatrix()));
 
     
-    glm::mat4 projection_matrix = camera.getProjectionMatrix();
+    glm::mat4 projection_matrix = glm::perspective(glm::radians(60.f), 1.f, 0.1f, 100.f);;
     shader.setProjection(projection_matrix);
     shader.setView(skybox_view);
 
