@@ -122,15 +122,15 @@ void updateLight(PointLight& light_source, DirectionLight& dlight, Model3D& mode
 }
 
 // Updates and returns the camera to use based on the program state
-Camera* updateCamera(PerspectiveCamera& perspective, OrthographicCamera& orthographical, struct State& state) {
+int updateCamera(PerspectiveCamera& perspective, OrthographicCamera& orthographical, struct State& state) {
     if (state.camera_mode == CameraMode::orthographical)
-        return &orthographical;
+        return 2;
     else {
         // Adjust perspective camera rotation based on inputs
-        perspective.move(state.cam_rot.x, state.cam_rot.y);
+        perspective.rotate(state.cam_rot.x, state.cam_rot.y);
         // Set the input adjustments to 0 as they ahve already been applied
         state.cam_rot = {0.f, 0.f};
-        return &perspective;
+        return 1;
     }
 }
 
@@ -227,14 +227,20 @@ int main(void) {
         // Update lighting and objects based on program state
         updateObject(firehydrant, state);
         updateLight(plight, dlight, lightbulb, state);
-        Camera* active_cam = NULL;
-        active_cam = updateCamera(perspective_camera, orthographic_camera, state);
-
-        skybox.draw(*active_cam);
+        
+        int active_cam = updateCamera(perspective_camera, orthographic_camera, state);
 
         // Draw objects
-        drawObject(firehydrant, firehydrant_tex, *active_cam, texlighting_shader, plight, dlight);
-        drawObject(lightbulb, *active_cam, color_shader, glm::vec4(plight.diff_color, 1.0f));
+        if (active_cam == 1) {
+            skybox.draw(perspective_camera);
+            drawObject(firehydrant, firehydrant_tex, perspective_camera, texlighting_shader, plight, dlight);
+            drawObject(lightbulb, perspective_camera, color_shader, glm::vec4(plight.diff_color, 1.0f));
+        }
+        else {
+            skybox.draw(orthographic_camera);
+            drawObject(firehydrant, firehydrant_tex, orthographic_camera, texlighting_shader, plight, dlight);
+            drawObject(lightbulb, orthographic_camera, color_shader, glm::vec4(plight.diff_color, 1.0f));
+        }
 
         // Swap front and back buffers
         glfwSwapBuffers(window);
