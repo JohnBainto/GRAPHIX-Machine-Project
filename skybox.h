@@ -5,14 +5,14 @@
 #include "camera.h"
 
 static const float skybox_vertices[] {
-        -1.f, -1.f, 1.f, //0
-        1.f, -1.f, 1.f,  //1
-        1.f, -1.f, -1.f, //2
-        -1.f, -1.f, -1.f,//3
-        -1.f, 1.f, 1.f,  //4
-        1.f, 1.f, 1.f,   //5
-        1.f, 1.f, -1.f,  //6
-        -1.f, 1.f, -1.f  //7
+        -10.f, -10.f, 10.f, //0
+        10.f, -10.f, 10.f,  //1
+        10.f, -10.f, -10.f, //2
+        -10.f, -10.f, -10.f,//3
+        -10.f, 10.f, 10.f,  //4
+        10.f, 10.f, 10.f,   //5
+        10.f, 10.f, -10.f,  //6
+        -10.f, 10.f, -10.f  //7
 };
 
 static const unsigned int skybox_indices[] {
@@ -35,22 +35,12 @@ static const unsigned int skybox_indices[] {
     6,2,3
 };
 
-static const std::string face_skybox[] {
-        "Skybox/uw_rt.jpg",
-        "Skybox/uw_lf.jpg",
-        "Skybox/uw_up.jpg",
-        "Skybox/uw_dn.jpg",
-        "Skybox/uw_ft.jpg",
-        "Skybox/uw_bk.jpg"
-};
-
 class Skybox {
 public:
     unsigned int skybox_vao, skybox_vbo, skybox_ebo;
     unsigned int skybox_tex;
-    SkyboxShader shader;
 
-    Skybox(): shader("Shaders/skybox.vert", "Shaders/skybox.frag") {
+    Skybox(const std::string face_skybox[6]) {
         glGenVertexArrays(1, &skybox_vao);
         glGenBuffers(1, &skybox_vbo);
         glGenBuffers(1, &skybox_ebo);
@@ -90,6 +80,15 @@ public:
         stbi_set_flip_vertically_on_load(true);
     }
 
-    void draw(OrthographicCamera& camera);
-    void draw(Camera& camera);
+    ~Skybox() {
+        glDeleteVertexArrays(1, (GLuint*) skybox_vao);
+        glDeleteVertexArrays(1, (GLuint*) skybox_vbo);
+        glDeleteVertexArrays(1, (GLuint*) skybox_ebo);
+    }
+
+    // To remove the position of the camera, only the rotation of the camera for the skyboxs
+    inline glm::mat4 getSkyblockViewMatrix(Camera& camera) {
+        glm::mat4 skybox_view = glm::mat4(1.f);
+        return glm::mat4(glm::mat3(camera.getViewMatrix()));
+    }
 };

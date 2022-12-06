@@ -11,54 +11,6 @@
 #include "shader.h"
 #include "skybox.h"
 
-// Overloaded draw function to a draw a model with lighting and texture
-void drawObject(Model3D& object, Texture tex, Camera& camera, TexLightingShader& shader, 
-    PointLight& point_light, DirectionLight& dir_light) {
-    glUseProgram(shader.shader_program);
-
-    // Get transformation, projection, and view matrixes
-    glm::mat4 transformation = object.getTransformationMatrix();
-    glm::mat4 projection = camera.getProjectionMatrix();
-    glm::mat4 view = camera.getViewMatrix();
-
-    // Use the given VAO in the model object to draw
-    glBindVertexArray(object.vertex_attribs.VAO);
-
-    // Pass variables to shader
-    shader.setTransform(transformation);
-    shader.setProjection(projection);
-    shader.setView(view);
-    shader.setTexture(tex);
-    glm::vec3 camera_pos = camera.getCameraPos();
-    shader.setPointLight(point_light, camera_pos);
-    shader.setDirectionLight(dir_light, camera_pos);
-
-    // Draw the elements
-    glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.count);
-}
-
-// Overloaded draw function to a draw a model with a color
-void drawObject(Model3D& object, Camera& camera, ColorShader& shader, glm::vec4 color) {
-    glUseProgram(shader.shader_program);
-
-    // Get transformation, projection, and view matrixes
-    glm::mat4 transformation = object.getTransformationMatrix();
-    glm::mat4 projection = camera.getProjectionMatrix();
-    glm::mat4 view = camera.getViewMatrix();
-
-    // Use the given VAO in the model object to draw
-    glBindVertexArray(object.vertex_attribs.VAO);
-
-    // Pass variables to shader
-    shader.setTransform(transformation);
-    shader.setProjection(projection);
-    shader.setView(view);
-    shader.setColor(color);
-
-    // Draw the elements
-    glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.count);
-}
-
 // Updates a model object based on the program state
 void updateObject(Model3D& model, struct State& state) {
     if (state.cur_controlled == Controllable::object) {
@@ -122,15 +74,15 @@ void updateLight(PointLight& light_source, DirectionLight& dlight, Model3D& mode
 }
 
 // Updates and returns the camera to use based on the program state
-int updateCamera(PerspectiveCamera& perspective, OrthographicCamera& orthographical, struct State& state) {
+Camera* updateCamera(PerspectiveCamera& perspective, OrthographicCamera& orthographical, struct State& state) {
     if (state.camera_mode == CameraMode::orthographical)
-        return 2;
+        return &orthographical;
     else {
         // Adjust perspective camera rotation based on inputs
         perspective.rotate(state.cam_rot.x, state.cam_rot.y);
         // Set the input adjustments to 0 as they ahve already been applied
         state.cam_rot = {0.f, 0.f};
-        return 1;
+        return &perspective;
     }
 }
 
@@ -159,6 +111,7 @@ int main(void) {
     // Create shaders
     TexLightingShader texlighting_shader("Shaders/objshader.vert", "Shaders/objshader.frag");
     ColorShader color_shader("Shaders/nolightshader.vert", "Shaders/nolightshader.frag");
+    SkyboxShader skybox_shader("Shaders/skybox.vert", "Shaders/skybox.frag");
 
     // Create textures
     Texture firehydrant_tex("3D/firehydrant.png");
@@ -169,7 +122,7 @@ int main(void) {
     VertexAttribs lightbulb_res("3D/lightbulb.obj"), firehydrant_res("3D/firehydrant.obj");
 
     // Create cameras
-    PerspectiveCamera perspective_camera(screen_wt / screen_ht, 15.f);
+    ThirdPersonCamera perspective_camera(screen_wt / screen_ht, 15.f);
     OrthographicCamera orthographic_camera;
 
     PointLight plight(
@@ -209,7 +162,16 @@ int main(void) {
         {0.04f, 0.04f, 0.04f}   // XYZ scale
     };
 
-    Skybox skybox;
+    const std::string face_skybox[] {
+        "Skybox/uw_rt.jpg",
+        "Skybox/uw_lf.jpg",
+        "Skybox/uw_up.jpg",
+        "Skybox/uw_dn.jpg",
+        "Skybox/uw_ft.jpg",
+        "Skybox/uw_bk.jpg"
+    };
+
+    Skybox skybox(face_skybox);
 
     // Pass state object to input control functions
     struct State state;
@@ -227,20 +189,14 @@ int main(void) {
         // Update lighting and objects based on program state
         updateObject(firehydrant, state);
         updateLight(plight, dlight, lightbulb, state);
-        
-        int active_cam = updateCamera(perspective_camera, orthographic_camera, state);
+        Camera* active_cam = NULL;
+        active_cam = updateCamera(perspective_camera, orthographic_camera, state);
+
+        skybox_shader.render(skybox, *active_cam);
 
         // Draw objects
-        if (active_cam == 1) {
-            skybox.draw(perspective_camera);
-            drawObject(firehydrant, firehydrant_tex, perspective_camera, texlighting_shader, plight, dlight);
-            drawObject(lightbulb, perspective_camera, color_shader, glm::vec4(plight.diff_color, 1.0f));
-        }
-        else {
-            skybox.draw(orthographic_camera);
-            drawObject(firehydrant, firehydrant_tex, orthographic_camera, texlighting_shader, plight, dlight);
-            drawObject(lightbulb, orthographic_camera, color_shader, glm::vec4(plight.diff_color, 1.0f));
-        }
+        texlighting_shader.render(firehydrant, firehydrant_tex, *active_cam, plight, dlight);
+        color_shader.render(lightbulb, *active_cam, glm::vec4(plight.diff_color, 1.0f));
 
         // Swap front and back buffers
         glfwSwapBuffers(window);

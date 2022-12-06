@@ -136,7 +136,7 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="skybox.cpp" />
+    <ClCompile Include="shader.cpp" />
     <ClCompile Include="texture.h" />
   </ItemGroup>
   <ItemGroup>
