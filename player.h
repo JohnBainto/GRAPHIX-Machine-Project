@@ -15,8 +15,8 @@ public:
 	FirstPersonCamera& cam_1stppov;
 	OrthographicCamera& cam_birdppov;
 
-	Player(Model3D& sub_model, ThirdPersonCamera& cam_3rdppov, FirstPersonCamera& cam_1stppov,
-		OrthographicCamera& cam_birdppov):
+	Player(Model3D& sub_model, ThirdPersonCamera& cam_3rdppov,
+		FirstPersonCamera& cam_1stppov, OrthographicCamera& cam_birdppov):
 		pos(0, -5, 0),
 		is_ortho(false),
 		is_third_ppov(false),
