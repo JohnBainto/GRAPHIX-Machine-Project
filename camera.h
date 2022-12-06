@@ -12,7 +12,11 @@ protected:
 public:
     Camera(glm::vec3 camera_pos = glm::vec3(0, 0, 10), glm::vec3 camera_center = glm::vec3(0, 0, 0),
         float znear = 0.1f, float zfar = 100.f, glm::vec3 world_up = glm::vec3(0, 1, 0)):
-        camera_pos(camera_pos), camera_center(camera_center), znear(znear), zfar(zfar), world_up(world_up) {}
+        camera_pos(camera_pos),
+        camera_center(camera_center),
+        znear(znear),
+        zfar(zfar),
+        world_up(world_up) {}
 
     // Gets the view matrix of this camera instance's settings
     inline glm::mat4 getViewMatrix() {
@@ -48,8 +52,10 @@ protected:
 public:
     PerspectiveCamera(float screen_ratio, float distance = 10.f, glm::vec3 camera_center = glm::vec3(0, 0, 0),
         float fov = 60.f, float znear = 0.1f, float zfar = 50.f, glm::vec3 world_up = glm::vec3(0, 1, 0)):
-        Camera(glm::vec3(0, 0, distance), camera_center, znear, zfar, world_up), distance(distance),
-        screen_ratio(screen_ratio), fov(fov) {
+        Camera(glm::vec3(0, 0, distance), camera_center, znear, zfar, world_up),
+        distance(distance),
+        screen_ratio(screen_ratio),
+        fov(fov) {
         // Set the initial camera position to be towards the screen facing center
         yaw = 90.f;
         pitch = 0.f;
@@ -115,7 +121,10 @@ public:
     OrthographicCamera(float zfar = 50.f, float znear = 0.1, float xmin = -10.f,
         float xmax = 10.f, float ymin = -10.f, float ymax = 10.f):
         Camera(glm::vec3(0, 20, 0), glm::vec3(0, 0, 0), znear, zfar),
-        xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax) { }
+        xmin(xmin),
+        xmax(xmax),
+        ymin(ymin),
+        ymax(ymax) {}
 
     // Gets the orthographical projection matrix of this camera instance's settings
     inline glm::mat4 getProjectionMatrix() {
