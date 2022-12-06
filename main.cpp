@@ -122,12 +122,12 @@ void updateLight(PointLight& light_source, DirectionLight& dlight, Model3D& mode
 }
 
 // Updates and returns the camera to use based on the program state
-Camera* updateCamera(PerspectiveCamera& perspective, OrthographicCamera& orthographical, struct State& state) {
+Camera* updateCamera(ThirdPersonCamera& perspective, OrthographicCamera& orthographical, struct State& state) {
     if (state.camera_mode == CameraMode::orthographical)
         return &orthographical;
     else {
         // Adjust perspective camera rotation based on inputs
-        perspective.move(state.cam_rot.x, state.cam_rot.y);
+        perspective.rotate(state.cam_rot.x, state.cam_rot.y);
         // Set the input adjustments to 0 as they ahve already been applied
         state.cam_rot = {0.f, 0.f};
         return &perspective;
@@ -169,7 +169,7 @@ int main(void) {
     VertexAttribs lightbulb_res("3D/lightbulb.obj"), firehydrant_res("3D/firehydrant.obj");
 
     // Create cameras
-    PerspectiveCamera perspective_camera(screen_wt / screen_ht, 15.f);
+    ThirdPersonCamera perspective_camera(screen_wt / screen_ht, 15.f);
     OrthographicCamera orthographic_camera;
 
     PointLight plight(
