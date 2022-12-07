@@ -12,7 +12,7 @@ static const float skybox_vertices[] {
         -50.f, 50.f, 50.f,  //4
         50.f, 50.f, 50.f,   //5
         50.f, 50.f, -50.f,  //6
-        -50.f, 50.f, -0.f  //7
+        -50.f, 50.f, -50.f  //7
 };
 
 static const unsigned int skybox_indices[] {

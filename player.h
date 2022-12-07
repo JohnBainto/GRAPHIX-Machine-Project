@@ -26,7 +26,7 @@ public:
 		light_intensity(0),
 		sub_model(sub_model),
 		front_light(light_intensity, glm::vec3(pos.x + 3, pos.y + 3, pos.z + 3), {1.f, 1.f, 1.f}, 0.3f, 0.3f, 80.f),
-		cam_3rdppov(10.f, pos, 60.f, 0.1f, 5.f),
+		cam_3rdppov(15.f, pos, 60.f, 0.1f, 50.f),
 		cam_1stppov(pos, glm::vec3(pos.x, pos.y, pos.z - 1)),
 		cam_birdppov(pos) {
 		sub_model.pos = pos;

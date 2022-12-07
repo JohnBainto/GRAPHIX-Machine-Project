@@ -135,7 +135,7 @@ void TexLightingShader::render(Model3D& object, Camera& camera, PointLight& poin
     setDirectionLight(dir_light, camera.camera_pos);
 
     // Draw the elements
-    glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.vector_size);
+    glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.count);
 }
 
 void NormalMapShader::setNormalTexture(Texture& norm_tex) {
@@ -166,7 +166,7 @@ void NormalMapShader::render(Model3D& object, Camera& camera, PointLight& point_
     setDirectionLight(dir_light, camera.camera_pos);
 
     // Draw the elements
-    glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.vector_size);
+    glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.count);
 }
 
 // Pass a color for the shader to use
@@ -193,5 +193,5 @@ void ColorShader::render(Model3D& object, Camera& camera, glm::vec4 color) {
     setColor(color);
 
     // Draw the elements
-    glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.vector_size);
+    glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.count);
 }

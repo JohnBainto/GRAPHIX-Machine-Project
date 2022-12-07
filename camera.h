@@ -78,13 +78,17 @@ public:
     // Adjusts the horizontal and vertical rotation (pitch and yaw) of this camera by an amount
     inline void rotate(float h_amount = 0.f, float v_amount = 0.f) {
         yaw += h_amount;
-        pitch -= v_amount;
+        pitch += v_amount;
+        
         // Bind the range of the pitch and yaw to be between -89.9 to 89.9 and -360 to 360 respectively
         yaw = (yaw >= 360 || yaw <= -360) ? 0 : yaw;
         pitch = (pitch >= 90) ? 89.9 : (pitch <= -90) ? -89.9 : pitch;
         camera_pos.y = distance * std::sin(glm::radians(pitch));
         camera_pos.z = distance * std::sin(glm::radians(yaw)) * std::cos(glm::radians(pitch));
         camera_pos.x = distance * std::cos(glm::radians(yaw)) * std::cos(glm::radians(pitch));
+
+        printf("pos: %f %f %f\n", camera_pos.x, camera_pos.y, camera_pos.z);
+        printf("cen: %f %f %f\n", camera_center.x, camera_center.y, camera_center.z);
     }
 };
 

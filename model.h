@@ -8,8 +8,8 @@
 typedef struct VertexAttribs {
     GLuint VAO;
     GLuint VBO;
-    std::vector<GLfloat> vertex_data;
-    int vector_size;
+    std::vector<GLfloat> full_vertex_data;
+    int count;
 
     // Load vertex attributes from obj file path
     VertexAttribs(const char* model_path) {
@@ -23,6 +23,8 @@ typedef struct VertexAttribs {
 
         std::vector<glm::vec3> tangents;
         std::vector<glm::vec3> bitangents;
+
+        count = full_vertex_data.size() / 14;
 
         for (int i = 0; i < shapes[0].mesh.indices.size(); i += 3) {
             tinyobj::index_t vData1 = shapes[0].mesh.indices[i];
@@ -82,7 +84,6 @@ typedef struct VertexAttribs {
         }
 
         // Load vertex data using indices of what is available
-        std::vector<GLfloat> full_vertex_data;
         for (int i = 0; i < shapes[0].mesh.indices.size(); i++) {
             tinyobj::index_t vData = shapes[0].mesh.indices[i];
             // XYZ
@@ -127,13 +128,13 @@ typedef struct VertexAttribs {
 
         glBufferData(
             GL_ARRAY_BUFFER,
-            sizeof(GL_FLOAT) * vertex_data.size(),
-            vertex_data.data(),
+            sizeof(GL_FLOAT) * full_vertex_data.size(),
+            full_vertex_data.data(),
             GL_STATIC_DRAW
         );
 
         // Size of vector depends on which attributes were available
-        vector_size = 14;
+        int vector_size = 14;
 
         // Define how to interprete the VBO for position
         glVertexAttribPointer(

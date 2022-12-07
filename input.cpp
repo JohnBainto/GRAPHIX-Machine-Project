@@ -1,4 +1,4 @@
-#include "input.h"
+#include "player.h"
 
 static float last_mouse_x = 0;	// Last saved position of the mouse on the x-axis
 static float last_mouse_y = 0;	// Last saved position of the mouse on the y-axis

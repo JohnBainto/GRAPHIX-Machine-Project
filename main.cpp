@@ -107,6 +107,8 @@ int main(void) {
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        skybox_shader.render(skybox, player.getActiveCam());
+
         // Update lighting and objects based on program state
         if (player.is_ortho) {
             normalmap_shader.render(player.sub_model, player.cam_birdppov, player.front_light, dlight);
@@ -119,8 +121,6 @@ int main(void) {
         }
 
         texlighting_shader.render(firehydrant, player.cam_birdppov, player.front_light, dlight);
-
-        skybox_shader.render(skybox, player.getActiveCam());
 
         // Swap front and back buffers
         glfwSwapBuffers(window);
