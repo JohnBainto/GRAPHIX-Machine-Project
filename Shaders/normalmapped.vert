@@ -2,15 +2,15 @@
 
 //Retrieve the position, must match the index of the VAO, vec3 for x y z
 //Gets data at Attrib Index 0
-layout(location = 0) in vec3 aPos;
-layout(location = 1) in vec3 vertexNormal;
-layout(location = 2) in vec2 aTex;
+layout(location = 0) in vec3 apos;
+layout(location = 1) in vec3 vertex_normal;
+layout(location = 2) in vec2 atex;
 layout(location = 3) in vec3 m_tan;
 layout(location = 4) in vec3 m_btan;
 
-out vec2 texCoord;
-out vec3 normCoord;
-out vec3 fragPos;
+out vec2 tex_coord;
+out vec3 norm_coord;
+out vec3 frag_pos;
 out mat3 TBN;
 
 uniform mat4 transform;
@@ -20,24 +20,20 @@ uniform mat4 view;
 void main() {
 
 	// Convert aPos to a vec4 and assign it to special variable gl_Position
-	gl_Position = projection * view * transform * vec4(aPos, 1.0);
+	gl_Position = projection * view * transform * vec4(apos, 1.0);
 
-	texCoord = aTex;
+	// Pass value for tex_coord to fragment shader
+	tex_coord = atex;
 
-	mat3 modelMat = mat3(
-		transpose(
-			inverse(transform)
-		)
-	);
+	mat3 model_mat = mat3(transpose(inverse(transform)));
 
-	normCoord = modelMat * vertexNormal;
+	norm_coord = model_mat * vertex_normal;
 
-	vec3 T = normalize(modelMat * m_tan);
-	vec3 B = normalize(modelMat * m_btan);
-	vec3 N = normalize(normCoord);
+	vec3 T = normalize(model_mat * m_tan);
+	vec3 B = normalize(model_mat * m_btan);
+	vec3 N = normalize(norm_coord);
 
 	TBN = mat3(T, B, N);
 
-	fragPos = vec3(transform * vec4(aPos, 1.0));
-
+	frag_pos = vec3(transform * vec4(apos, 1.0));
 }
