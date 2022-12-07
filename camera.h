@@ -3,13 +3,12 @@
 
 // Abstract base camera class that contains common attributes of different camera classes
 class Camera {
-protected:
+public:
     glm::vec3 camera_pos;
     glm::vec3 world_up;
     glm::vec3 camera_center;
     float znear, zfar;
 
-public:
     Camera(glm::vec3 camera_pos = glm::vec3(0, 0, 10), glm::vec3 camera_center = glm::vec3(0, 0, 0),
         float znear = 0.1f, float zfar = 100.f, glm::vec3 world_up = glm::vec3(0, 1, 0)):
         camera_pos(camera_pos),
@@ -43,13 +42,13 @@ public:
 
 // Represents a first person point of view camera
 class PerspectiveCamera: public Camera {
-protected:
+public:
     float yaw;
     float pitch;
     float distance;
     float screen_ratio;
     float fov;
-public:
+
     PerspectiveCamera(float screen_ratio, float distance = 10.f, glm::vec3 camera_center = glm::vec3(0, 0, 0),
         float fov = 60.f, float znear = 0.1f, float zfar = 50.f, glm::vec3 world_up = glm::vec3(0, 1, 0)):
         Camera(glm::vec3(0, 0, distance), camera_center, znear, zfar, world_up),

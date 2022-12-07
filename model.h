@@ -1,13 +1,15 @@
 #pragma once
 
 #include "common.h"
+#include "texture.h"
+#include <vector>
 
 // Object wrapper for VAO, VBO, and other vertex data information for a 3D model
 typedef struct VertexAttribs {
     GLuint VAO;
     GLuint VBO;
-    std::vector<GLfloat> vertex_data;
-    int count;
+    std::vector<GLfloat> full_vertex_data;
+    int vector_size;
 
     // Load vertex attributes from obj file path
     VertexAttribs(const char* model_path) {
@@ -19,52 +21,101 @@ typedef struct VertexAttribs {
 
         bool success = tinyobj::LoadObj(&attributes, &shapes, &materials, &warning, &error, model_path);
 
-        // Check if object has no normals or tex_coords
-        bool has_normals = attributes.normals.size() > 0;
-        bool has_tex_coords = attributes.texcoords.size() > 0;
+        std::vector<glm::vec3> tangents;
+        std::vector<glm::vec3> bitangents;
 
-        count = shapes[0].mesh.indices.size();
-        int ctr = 0;
-        glm::vec3 normal {0.f, 0.f, 0.f};
-        // Load vertex data using indices of what is available
-        for (auto& index_data : shapes[0].mesh.indices) {
-            auto vertex_it = attributes.vertices.begin() + (index_data.vertex_index * 3);
-            vertex_data.insert(vertex_data.end(), vertex_it, vertex_it + 3);
-            if (has_normals) {
-                auto normal_it = attributes.normals.begin() + (index_data.normal_index * 3);
-                vertex_data.insert(vertex_data.end(), normal_it, normal_it + 3);
-            }
-            else {
-                // If the normals aren't available, calculate them using the vertices
-                // The vertex normal is a unit vector perpendicular to the surface formed by 3 vertices
-                // https://gamedev.stackexchange.com/questions/133864/calculating-vertex-normals-in-opengl-c/133881#133881
-                // Calculate the normals of every 3 vertices
-                if (ctr == 0) {
-                    // Get the an iterator of the next 3 vertices
-                    auto it1 = attributes.vertices.begin() + index_data.vertex_index * 3;
-                    auto it2 = attributes.vertices.begin() + (&index_data + 1)->vertex_index * 3;
-                    auto it3 = attributes.vertices.begin() + (&index_data + 2)->vertex_index * 3;
+        for (int i = 0; i < shapes[0].mesh.indices.size(); i += 3) {
+            tinyobj::index_t vData1 = shapes[0].mesh.indices[i];
+            tinyobj::index_t vData2 = shapes[0].mesh.indices[i + 1];
+            tinyobj::index_t vData3 = shapes[0].mesh.indices[i + 2];
 
-                    // Set their values into vectors representing a point
-                    glm::vec3 p1 = glm::vec3(*it1, *(it1 + 1), *(it1 + 2));
-                    glm::vec3 p2 = glm::vec3(*it2, *(it2 + 1), *(it2 + 2));
-                    glm::vec3 p3 = glm::vec3(*it3, *(it3 + 1), *(it3 + 2));
+            glm::vec3 v1 = glm::vec3(
+                attributes.vertices[vData1.vertex_index * 3],
+                attributes.vertices[vData1.vertex_index * 3 + 1],
+                attributes.vertices[vData1.vertex_index * 3 + 2]
+            );
 
-                    // Get the unit vector perpendicular to the plane made by the 3 points
-                    normal = glm::normalize(glm::cross(p2 - p1, p3 - p1));
-                }
-                vertex_data.push_back(normal.x);
-                vertex_data.push_back(normal.y);
-                vertex_data.push_back(normal.z);
-            }
-            if (has_tex_coords) {
-                auto tex_it = attributes.texcoords.begin() + (index_data.texcoord_index * 2);
-                vertex_data.insert(vertex_data.end(), tex_it, tex_it + 2);
-            }
-            ctr = (ctr + 1) % 3;
+            glm::vec3 v2 = glm::vec3(
+                attributes.vertices[vData2.vertex_index * 3],
+                attributes.vertices[vData2.vertex_index * 3 + 1],
+                attributes.vertices[vData2.vertex_index * 3 + 2]
+            );
+
+            glm::vec3 v3 = glm::vec3(
+                attributes.vertices[vData3.vertex_index * 3],
+                attributes.vertices[vData3.vertex_index * 3 + 1],
+                attributes.vertices[vData3.vertex_index * 3 + 2]
+            );
+
+            glm::vec2 uv1 = glm::vec2(
+                attributes.texcoords[vData1.texcoord_index * 2],
+                attributes.texcoords[vData1.texcoord_index * 2 + 1]
+            );
+
+            glm::vec2 uv2 = glm::vec2(
+                attributes.texcoords[vData2.texcoord_index * 2],
+                attributes.texcoords[vData2.texcoord_index * 2 + 1]
+            );
+
+            glm::vec2 uv3 = glm::vec2(
+                attributes.texcoords[vData3.texcoord_index * 2],
+                attributes.texcoords[vData3.texcoord_index * 2 + 1]
+            );
+
+            glm::vec3 deltaPos1 = v2 - v1;
+            glm::vec3 deltaPos2 = v3 - v1;
+            glm::vec2 deltaUV1 = uv2 - uv1;
+            glm::vec2 deltaUV2 = uv3 - uv1;
+
+            float r = 1.f / ((deltaUV1.x * deltaUV2.y) - (deltaUV1.y * deltaUV2.x));
+
+            glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
+            glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
+
+            tangents.push_back(tangent);
+            tangents.push_back(tangent);
+            tangents.push_back(tangent);
+
+            bitangents.push_back(bitangent);
+            bitangents.push_back(bitangent);
+            bitangents.push_back(bitangent);
         }
-        // Set to true because the normals were either found or generated
-        has_normals = true;
+
+        // Load vertex data using indices of what is available
+        for (int i = 0; i < shapes[0].mesh.indices.size(); i++) {
+            tinyobj::index_t vData = shapes[0].mesh.indices[i];
+            // XYZ
+            int vertexIndex = vData.vertex_index * 3; // multiplied by 3 cause of x, y, z and get the base offset of vertex itself
+
+            // NORMAL XYZ
+            int normalIndex = vData.normal_index * 3; // multiplied by 3 cause of nx, ny, nz
+
+            // UV
+            int uvIndex = vData.texcoord_index * 2; // multiplied by 2 cause of u and v
+
+            // XYZ
+            full_vertex_data.push_back(attributes.vertices[vertexIndex]);
+            full_vertex_data.push_back(attributes.vertices[vertexIndex + 1]);
+            full_vertex_data.push_back(attributes.vertices[vertexIndex + 2]);
+
+
+            // NXNYNZ
+            full_vertex_data.push_back(attributes.normals[normalIndex]);
+            full_vertex_data.push_back(attributes.normals[normalIndex + 1]);
+            full_vertex_data.push_back(attributes.normals[normalIndex + 2]);
+
+            // UV
+            full_vertex_data.push_back(attributes.texcoords[uvIndex]);
+            full_vertex_data.push_back(attributes.texcoords[uvIndex + 1]);
+
+            full_vertex_data.push_back(tangents[i].x);
+            full_vertex_data.push_back(tangents[i].y);
+            full_vertex_data.push_back(tangents[i].z);
+
+            full_vertex_data.push_back(bitangents[i].x);
+            full_vertex_data.push_back(bitangents[i].y);
+            full_vertex_data.push_back(bitangents[i].z);
+        }
 
         // Initialize VAO and VBO
         glGenVertexArrays(1, &VAO);
@@ -75,14 +126,13 @@ typedef struct VertexAttribs {
 
         glBufferData(
             GL_ARRAY_BUFFER,
-            sizeof(GL_FLOAT) * vertex_data.size(),
-            vertex_data.data(),
+            sizeof(GL_FLOAT) * full_vertex_data.size(),
+            full_vertex_data.data(),
             GL_STATIC_DRAW
         );
 
         // Size of vector depends on which attributes were available
-        // 3 for XYZ vertices, 3 for XYZ normal vertices, 2 for UV tex_coords
-        int vector_size = 3 + (has_normals ? 3 : 0) + (has_tex_coords ? 2 : 0);
+        vector_size = 14;
 
         // Define how to interprete the VBO for position
         glVertexAttribPointer(
@@ -94,43 +144,59 @@ typedef struct VertexAttribs {
             (void*) 0
         );
 
-        // Define normals if available
-        if (has_normals) {
-            GLintptr normptr = 3 * sizeof(GL_FLOAT);
+        GLintptr normptr = 3 * sizeof(GL_FLOAT);
 
-            // Define how to interprete the VBO for the UV
-            glVertexAttribPointer(
-                1, // Normal X Y Z
-                3, // Stands for normal X Y Z
-                GL_FLOAT,
-                GL_FALSE,
-                vector_size * sizeof(GL_FLOAT), // X Y Z U and V
-                (void*) normptr
-            );
-        }
+        // Define how to interprete the VBO for the UV
+        glVertexAttribPointer(
+            1, // Normal X Y Z
+            3, // Stands for normal X Y Z
+            GL_FLOAT,
+            GL_FALSE,
+            vector_size * sizeof(GL_FLOAT), // X Y Z U and V
+            (void*) normptr
+        );
 
-        // Define tex_coords if available
-        if (has_tex_coords) {
-            // Skip 6 elements if normals are available other wise only skip 3
-            GLintptr uvptr = (has_normals ? 6 : 3) * sizeof(GL_FLOAT);
+        // Skip 6 elements if normals are available other wise only skip 3
+        GLintptr uvptr = 6 * sizeof(GL_FLOAT);
 
-            // Define how to interprete the VBO for the UV
-            glVertexAttribPointer(
-                2, // Texture UV
-                2, //Stands for U V
-                GL_FLOAT,
-                GL_FALSE,
-                vector_size * sizeof(GL_FLOAT),
-                (void*) uvptr
-            );
-        }
+        // Define how to interprete the VBO for the UV
+        glVertexAttribPointer(
+            2, // Texture UV
+            2, //Stands for U V
+            GL_FLOAT,
+            GL_FALSE,
+            vector_size * sizeof(GL_FLOAT),
+            (void*) uvptr
+        );
+
+        GLintptr tanptr = 8 * sizeof(GL_FLOAT);
+
+        glVertexAttribPointer(
+            3, // Tan
+            3, //Stands for U V
+            GL_FLOAT,
+            GL_FALSE,
+            14 * sizeof(GL_FLOAT), // X Y Z U and V
+            (void*) tanptr
+        );
+
+        GLintptr bitanptr = 11 * sizeof(GL_FLOAT);
+
+        glVertexAttribPointer(
+            4, // Bitan
+            3, //Stands for U V
+            GL_FLOAT,
+            GL_FALSE,
+            14 * sizeof(GL_FLOAT), // X Y Z U and V
+            (void*) bitanptr
+        );
 
         // Enable the vertex attrib array of what is available
         glEnableVertexAttribArray(0);
-        if (has_normals)
-            glEnableVertexAttribArray(1);
-        if (has_tex_coords)
-            glEnableVertexAttribArray(2);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+        glEnableVertexAttribArray(3);
+        glEnableVertexAttribArray(4);
 
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
@@ -147,6 +213,7 @@ typedef struct VertexAttribs {
 typedef struct Model3D {
     // Different instances can share the same vertex_attribs thus a non-owning reference
     VertexAttribs& vertex_attribs;
+    std::vector<Texture>& textures;
     glm::vec3 pos;
     glm::vec3 rot;
     glm::vec3 scale;

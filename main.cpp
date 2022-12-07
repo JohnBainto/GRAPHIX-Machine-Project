@@ -114,7 +114,9 @@ int main(void) {
     SkyboxShader skybox_shader("Shaders/skybox.vert", "Shaders/skybox.frag");
 
     // Create textures
-    Texture firehydrant_tex("3D/firehydrant.png");
+    std::vector<Texture> firehydrant_tex;
+    firehydrant_tex.push_back(Texture("3D/firehydrant.png"));
+    std::vector<Texture> none;
 
     // Create obj model VAO resources
     // Fire hydrant texture and model: https://www.cgtrader.com/free-3d-models/architectural/architectural-street/fire-hydrant-b3144492-f9f6-4608-99da-7ed8ea70708c
@@ -149,6 +151,7 @@ int main(void) {
     // Create instance of lightbulb object
     Model3D lightbulb {
         lightbulb_res,      // Vertex information object
+        none,
         {0.f, 0.f, 4.f},    // Position
         {0.f, 0.f, 0.f},    // XYZ rotation
         {7.f, 7.f, 7.f}     // XYZ scale
@@ -157,6 +160,7 @@ int main(void) {
     // Create instance of fire hydrant object
     Model3D firehydrant {
         firehydrant_res,        // Vertex information object
+        firehydrant_tex,
         {0.f, 0.f, 0.f},        // Position
         {0.f, 0.f, 0.f},        // XYZ rotation
         {0.04f, 0.04f, 0.04f}   // XYZ scale
@@ -195,7 +199,7 @@ int main(void) {
         skybox_shader.render(skybox, *active_cam);
 
         // Draw objects
-        texlighting_shader.render(firehydrant, firehydrant_tex, *active_cam, plight, dlight);
+        texlighting_shader.render(firehydrant, *active_cam, plight, dlight);
         color_shader.render(lightbulb, *active_cam, glm::vec4(plight.diff_color, 1.0f));
 
         // Swap front and back buffers
