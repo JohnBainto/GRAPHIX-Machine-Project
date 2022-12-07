@@ -86,9 +86,6 @@ public:
         camera_pos.y = distance * std::sin(glm::radians(pitch));
         camera_pos.z = distance * std::sin(glm::radians(yaw)) * std::cos(glm::radians(pitch));
         camera_pos.x = distance * std::cos(glm::radians(yaw)) * std::cos(glm::radians(pitch));
-
-        printf("pos: %f %f %f\n", camera_pos.x, camera_pos.y, camera_pos.z);
-        printf("cen: %f %f %f\n", camera_center.x, camera_center.y, camera_center.z);
     }
 };
 
@@ -128,7 +125,7 @@ private:
 public:
     OrthographicCamera(glm::vec3 pos, float zfar = 50.f, float znear = 0.1, float xmin = -10.f,
         float xmax = 10.f, float ymin = -10.f, float ymax = 10.f):
-        Camera(glm::vec3(pos.x, 0, pos.z), glm::vec3(0, 0, 0), znear, zfar),
+        Camera(glm::vec3(pos.x, 0, pos.z), glm::vec3(pos.x, -1, pos.z), znear, zfar),
         xmin(xmin),
         xmax(xmax),
         ymin(ymin),

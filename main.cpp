@@ -67,12 +67,12 @@ int main(void) {
     Model3D submarine {
         submarine_res,
         submarine_textures,
+        {0.f, -40.f, 0.f},
         {0, 0, 0},
-        {0, 0, 0},
-        {0.25, 0.25, 0.25}
+        {15.f, 15.f, 15.f}
     };
 
-    Player player(submarine);
+    Player player(firehydrant);
 
     DirectionLight dlight(
         glm::vec3(4.f, 11.f, -3.f),     // Light source position
@@ -103,6 +103,10 @@ int main(void) {
     glfwSetCursorPosCallback(window, mouseControl);
     glfwSetMouseButtonCallback(window, mouseButtonControl);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendEquation(GL_FUNC_ADD);
+
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -111,17 +115,17 @@ int main(void) {
 
         // Update lighting and objects based on program state
         if (player.is_ortho) {
-            normalmap_shader.render(player.sub_model, player.cam_birdppov, player.front_light, dlight);
+            texlighting_shader.render(player.sub_model, player.cam_birdppov, player.front_light, dlight);
         }
         else if (player.is_third_ppov) {
-            normalmap_shader.render(player.sub_model, player.cam_3rdppov, player.front_light, dlight);
+            texlighting_shader.render(player.sub_model, player.cam_3rdppov, player.front_light, dlight);
         }
         else {
 
         }
-
-        texlighting_shader.render(firehydrant, player.cam_birdppov, player.front_light, dlight);
-
+        //submarine.pos = player.getActiveCam().camera_center;
+        //submarine.pos.y -= 0.01;
+        //texlighting_shader.render(submarine, player.getActiveCam(), player.front_light, dlight);
         // Swap front and back buffers
         glfwSwapBuffers(window);
 

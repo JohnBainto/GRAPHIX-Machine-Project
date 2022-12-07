@@ -24,8 +24,6 @@ typedef struct VertexAttribs {
         std::vector<glm::vec3> tangents;
         std::vector<glm::vec3> bitangents;
 
-        count = full_vertex_data.size() / 14;
-
         for (int i = 0; i < shapes[0].mesh.indices.size(); i += 3) {
             tinyobj::index_t vData1 = shapes[0].mesh.indices[i];
             tinyobj::index_t vData2 = shapes[0].mesh.indices[i + 1];
@@ -118,6 +116,8 @@ typedef struct VertexAttribs {
             full_vertex_data.push_back(bitangents[i].y);
             full_vertex_data.push_back(bitangents[i].z);
         }
+
+        count = full_vertex_data.size() / 14;
 
         // Initialize VAO and VBO
         glGenVertexArrays(1, &VAO);
