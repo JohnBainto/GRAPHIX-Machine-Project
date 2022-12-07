@@ -9,3 +9,7 @@
 
 #include "tiny_obj_loader.h"
 #include "stb_image.h"
+
+#define SCREEN_HT 750
+#define SCREEN_WT 750
+#define SCREEN_RATIO SCREEN_HT / SCREEN_WT

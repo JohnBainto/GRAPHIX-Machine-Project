@@ -3,13 +3,12 @@
 
 // Abstract base camera class that contains common attributes of different camera classes
 class Camera {
-protected:
+public:
     glm::vec3 camera_pos;
     glm::vec3 world_up;
     glm::vec3 camera_center;
     float znear, zfar;
 
-public:
     Camera(glm::vec3 camera_pos = glm::vec3(0, 0, 10), glm::vec3 camera_center = glm::vec3(0, 0, 0),
         float znear = 0.1f, float zfar = 100.f, glm::vec3 world_up = glm::vec3(0, 1, 0)):
         camera_pos(camera_pos),
@@ -27,11 +26,6 @@ public:
         return glm::lookAt(camera_pos, camera_center, world_up);
     }
 
-    // Gets the camera position
-    inline glm::vec3 getCameraPos() {
-        return camera_pos;
-    }
-
     inline void move(float x_amount = 0.f, float z_amount = 0.f) {
         camera_pos.x += x_amount;
         camera_pos.z += z_amount;
@@ -43,45 +37,48 @@ public:
 
 // Represents a first person point of view camera
 class PerspectiveCamera: public Camera {
-protected:
+public:
     float yaw;
     float pitch;
-    float distance;
     float screen_ratio;
     float fov;
-public:
-    PerspectiveCamera(float screen_ratio, float distance = 10.f, glm::vec3 camera_center = glm::vec3(0, 0, 0),
+
+    PerspectiveCamera(glm::vec3 camera_pos, glm::vec3 camera_center = glm::vec3(0, 0, 0),
         float fov = 60.f, float znear = 0.1f, float zfar = 50.f, glm::vec3 world_up = glm::vec3(0, 1, 0)):
-        Camera(glm::vec3(0, 0, distance), camera_center, znear, zfar, world_up),
-        distance(distance),
-        screen_ratio(screen_ratio),
+        Camera(camera_pos, camera_center, znear, zfar, world_up),
+        screen_ratio(SCREEN_RATIO),
         fov(fov) {
         // Set the initial camera position to be towards the screen facing center
         yaw = 90.f;
         pitch = 0.f;
     }
 
-    // Adjusts the horizontal and vertical rotation (pitch and yaw) of this camera by an amount
-    virtual inline void rotate(float h_amount = 0.f, float v_amount = 0.f) = 0;
-
     // Gets the perspective projection matrix of this camera instance's settings
     inline glm::mat4 getProjectionMatrix() {
         return glm::perspective(glm::radians(fov), screen_ratio, znear, zfar);
     }
+
+    inline void move(glm::vec3 new_pos) {
+        camera_center = camera_center + (new_pos - camera_pos);
+        camera_pos = new_pos;
+    }
 };
 
 class ThirdPersonCamera: public PerspectiveCamera {
+protected:
+    float distance;
 public:
-    ThirdPersonCamera(float screen_ratio, float distance = 10.f, glm::vec3 camera_center = glm::vec3(0, 0, 0),
+    ThirdPersonCamera(float distance = 10.f, glm::vec3 camera_center = glm::vec3(0, 0, 0),
         float fov = 60.f, float znear = 0.1f, float zfar = 50.f, glm::vec3 world_up = glm::vec3(0, 1, 0)):
-        PerspectiveCamera(screen_ratio, distance, camera_center, fov, znear , zfar , world_up) {
+        PerspectiveCamera(camera_center + distance, camera_center, fov, znear , zfar , world_up),
+        distance(distance) {
         rotate();
     }
 
     // Adjusts the horizontal and vertical rotation (pitch and yaw) of this camera by an amount
     inline void rotate(float h_amount = 0.f, float v_amount = 0.f) {
         yaw += h_amount;
-        pitch += v_amount;
+        pitch -= v_amount;
         // Bind the range of the pitch and yaw to be between -89.9 to 89.9 and -360 to 360 respectively
         yaw = (yaw >= 360 || yaw <= -360) ? 0 : yaw;
         pitch = (pitch >= 90) ? 89.9 : (pitch <= -90) ? -89.9 : pitch;
@@ -93,22 +90,29 @@ public:
 
 class FirstPersonCamera: public PerspectiveCamera {
 public:
-    FirstPersonCamera(float screen_ratio, float distance = 10.f, glm::vec3 camera_center = glm::vec3(0, 0, 0),
+    FirstPersonCamera(glm::vec3 camera_pos, glm::vec3 camera_center = glm::vec3(0, 0, 0),
         float fov = 60.f, float znear = 0.1f, float zfar = 50.f, glm::vec3 world_up = glm::vec3(0, 1, 0)):
-        PerspectiveCamera(screen_ratio, distance, camera_center, fov, znear, zfar, world_up) {
-        rotate();
+        PerspectiveCamera(camera_pos, camera_center, fov, znear, zfar, world_up) {
+
     }
 
-    // Adjusts the horizontal and vertical rotation (pitch and yaw) of this camera by an amount
-    inline void rotate(float h_amount = 0.f, float v_amount = 0.f) {
+    inline void moveForward(float amount) {
+        glm::vec3 direction = amount * glm::normalize(camera_center - camera_pos);
+        camera_pos += direction;
+        camera_center += direction;
+    }
+
+    inline void moveVertically(float amount) {
+        camera_pos.y += amount;
+        camera_center.y += amount;
+    }
+
+    inline void turnYaw(float h_amount) {
         yaw += h_amount;
-        pitch += v_amount;
-        // Bind the range of the pitch and yaw to be between -89.9 to 89.9 and -360 to 360 respectively
         yaw = (yaw >= 360 || yaw <= -360) ? 0 : yaw;
-        pitch = (pitch >= 90) ? 89.9 : (pitch <= -90) ? -89.9 : pitch;
-        camera_center.y = distance * std::sin(glm::radians(pitch));
-        camera_center.z = distance * std::sin(glm::radians(yaw)) * std::cos(glm::radians(pitch));
-        camera_center.x = distance * std::cos(glm::radians(yaw)) * std::cos(glm::radians(pitch));
+        camera_center.x = camera_pos.x + cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+        camera_center.y = camera_pos.y + sin(glm::radians(pitch));
+        camera_center.z = camera_pos.z + sin(glm::radians(yaw)) * cos(glm::radians(pitch));
     }
 };
 
@@ -118,9 +122,9 @@ private:
     float xmin, xmax;
     float ymin, ymax;
 public:
-    OrthographicCamera(float zfar = 50.f, float znear = 0.1, float xmin = -10.f,
+    OrthographicCamera(glm::vec3 pos, float zfar = 50.f, float znear = 0.1, float xmin = -10.f,
         float xmax = 10.f, float ymin = -10.f, float ymax = 10.f):
-        Camera(glm::vec3(0, 20, 0), glm::vec3(0, 0, 0), znear, zfar),
+        Camera(glm::vec3(pos.x, 0, pos.z), glm::vec3(0, 0, 0), znear, zfar),
         xmin(xmin),
         xmax(xmax),
         ymin(ymin),

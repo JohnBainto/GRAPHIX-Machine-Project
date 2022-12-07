@@ -90,7 +90,21 @@ public:
     // Pass a direction light for the shader to use
     void setDirectionLight(DirectionLight& light_source, glm::vec3& camera_pos);
 
-    void render(Model3D& object, Texture tex, Camera& camera, PointLight& point_light, DirectionLight& dir_light);
+    // Pass a direction light for the shader to use
+    void setTint(glm::vec4& color);
+
+    void render(Model3D& object, Camera& camera, PointLight& point_light,
+        DirectionLight& dir_light, glm::vec4 color = {1.f, 1.f, 1.f, 1.f});
+};
+
+class NormalMapShader: public TexLightingShader {
+public:
+    NormalMapShader(const char* vert_path, const char* frag_path): TexLightingShader(vert_path, frag_path) {}
+
+    // Pass a texture variable for the shader to use
+    void setNormalTexture(Texture& norm_tex);
+
+    void render(Model3D& object, Camera& camera, PointLight& point_light, DirectionLight& dir_light);
 };
 
 // Shader program that only applies a color to an object

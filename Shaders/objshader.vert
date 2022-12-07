@@ -1,4 +1,4 @@
-	#version 330 core
+#version 330 core
 
 // Retrieve the vertices, normals, and tex_coords
 layout(location = 0) in vec3 apos;
