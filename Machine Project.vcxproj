@@ -170,6 +170,8 @@
   <ItemGroup>
     <None Include="Shaders\nolightshader.frag" />
     <None Include="Shaders\nolightshader.vert" />
+    <None Include="Shaders\normalmapped.frag" />
+    <None Include="Shaders\normalmapped.vert" />
     <None Include="Shaders\skybox.frag" />
     <None Include="Shaders\skybox.vert" />
   </ItemGroup>

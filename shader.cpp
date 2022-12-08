@@ -169,13 +169,14 @@ void NormalMapShader::render(Model3D& object, Camera& camera, PointLight& point_
     glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.vector_size);
 }
 
-// Pass a color for the shader to use
-void ColorShader::setColor(glm::vec4 &color) {
-    unsigned int color_loc = glGetUniformLocation(shader_program, "color");
-    glUniform4fv(color_loc, 1, glm::value_ptr(color));
+void NormalMapShader::setNormalTexture(Texture& norm_tex) {
+    glActiveTexture(GL_TEXTURE1);
+    GLuint normtex_address = glGetUniformLocation(shader_program, "norm_tex");
+    glBindTexture(GL_TEXTURE_2D, norm_tex.texture);
+    glUniform1i(normtex_address, norm_tex.tex_unit);
 }
 
-void ColorShader::render(Model3D& object, Camera& camera, glm::vec4 color) {
+void NormalMapShader::render(Model3D& object, Camera& camera, PointLight& point_light, DirectionLight& dir_light) {
     glUseProgram(shader_program);
 
     // Get transformation, projection, and view matrixes
@@ -190,7 +191,10 @@ void ColorShader::render(Model3D& object, Camera& camera, glm::vec4 color) {
     setTransform(transformation);
     setProjection(projection);
     setView(view);
-    setColor(color);
+    setTexture(object.textures[0]);
+    setNormalTexture(object.textures[1]);
+    setPointLight(point_light, camera.camera_pos);
+    setDirectionLight(dir_light, camera.camera_pos);
 
     // Draw the elements
     glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.vector_size);

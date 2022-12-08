@@ -32,8 +32,21 @@ public:
     PointLight(float linear, float quadratic, glm::vec3 pos, glm::vec3 diff_color,
         float ambient_str, glm::vec3 ambient_color,
         float spec_str, float spec_phong):
-        Light(pos, diff_color, ambient_str, ambient_color, spec_str, spec_phong),
-        linear(linear), quadratic(quadratic) {}
+        linear(linear),
+        quadratic(quadratic),
+        Light(pos, diff_color, ambient_str, ambient_color, spec_str, spec_phong) {}
+
+    PointLight(float strength, glm::vec3 pos, glm::vec3 color,
+        float ambient_str, float spec_str, float spec_phong):
+        Light(pos, color, ambient_str, color, spec_str, spec_phong) {
+        linear = 1 / strength * 0.14f;
+        quadratic = 1 / strength * 0.0007;
+    }
+
+    inline void adjustStrength(float strength) {
+		linear = 1 / strength * 0.14f;
+		quadratic = 1 / strength * 0.0007;
+    }
 };
 
 // Represents direction light, contains the necessary variables for lighting an object

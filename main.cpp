@@ -3,6 +3,9 @@
 
 #include "common.h"
 
+#include <iostream>
+using namespace std;
+
 #include "input.h"
 #include "camera.h"
 #include "light.h"
@@ -10,81 +13,7 @@
 #include "model.h"
 #include "shader.h"
 #include "skybox.h"
-
-// Updates a model object based on the program state
-void updateObject(Model3D& model, struct State& state) {
-    if (state.cur_controlled == Controllable::object) {
-        // Adjust the current object model rotation with the values from the input
-        model.rot = model.rot - state.rotations;
-        // Bind the range of the object rotation between -360 and 360
-        model.rot.x = model.rot.x >= 360 || model.rot.x <= -360 ? 0 : model.rot.x;
-        model.rot.y = model.rot.y >= 360 || model.rot.y <= -360 ? 0 : model.rot.y;
-        model.rot.z = model.rot.z >= 360 || model.rot.z <= -360 ? 0 : model.rot.z;
-        // Set the input rotation adjustments to 0 as they have already been applied
-        state.rotations = {0.f, 0.f, 0.f};
-    }
-}
-
-// Updates a point light and its model object representation based on the program state
-void updateLight(PointLight& light_source, DirectionLight& dlight, Model3D& model, struct State& state) {
-    // Initial light position is stored in a a 4 float vector and transformed with rotations
-    const static glm::vec4 init(light_source.pos, 0.f);
-    const static glm::vec3 selected_color(0.1f, 1.f, 0.1f);
-    const static glm::vec3 unselected_color(1.f, 1.f, 1.f);
-
-    // If currently controlling object, set the light color to unselected
-    if (state.cur_controlled == Controllable::object) {
-        light_source.setSameColor(unselected_color);
-    }
-    // If currently controlling light
-    else if (state.cur_controlled == Controllable::light) {
-        // Set the light color to selected
-        light_source.setSameColor(selected_color);
-
-        // The current rotation of the light and the object are stored in the model.rot vector
-        // Adjust the object model's rotation based on the inputs
-        model.rot = model.rot - state.rotations;
-        
-        // Create a rotation transformation matrix based on the model.rot vector
-        glm::mat4 transformation = glm::mat4(1.0f);
-        transformation = glm::rotate(transformation, glm::radians(-model.rot.x), glm::normalize(glm::vec3(1.f, 0.f, 0.f)));
-        transformation = glm::rotate(transformation, glm::radians(-model.rot.y), glm::normalize(glm::vec3(0.f, 1.f, 0.f)));
-        transformation = glm::rotate(transformation, glm::radians(-model.rot.z), glm::normalize(glm::vec3(0.f, 0.f, 1.f)));
-        
-        // Set the light position to the initial light position transformed by the transformation matrix
-        light_source.pos = init * transformation;
-        
-        // Set the rotations adjustments to 0 as they have been applied already
-        state.rotations = {0.f, 0.f, 0.f};
-    }
-    // Set the object model's position to the light source's position
-    model.pos = light_source.pos;
-
-    // Adjust the light source's intensity by the input adjusted by some constant
-    light_source.linear += state.light_intensity * 0.01;
-    light_source.quadratic += state.light_intensity * 0.00001;
-    dlight.intensity += state.dlight_intensity * 0.01;
-    if (light_source.linear < 0)
-        light_source.linear = 0;
-    if (light_source.quadratic < 0)
-        light_source.quadratic = 0;
-    // Set the intensity adjustments to 0 as they have been applied already
-    state.light_intensity = 0;
-    state.dlight_intensity = 0;
-}
-
-// Updates and returns the camera to use based on the program state
-Camera* updateCamera(PerspectiveCamera& perspective, OrthographicCamera& orthographical, struct State& state) {
-    if (state.camera_mode == CameraMode::orthographical)
-        return &orthographical;
-    else {
-        // Adjust perspective camera rotation based on inputs
-        perspective.rotate(state.cam_rot.x, state.cam_rot.y);
-        // Set the input adjustments to 0 as they ahve already been applied
-        state.cam_rot = {0.f, 0.f};
-        return &perspective;
-    }
-}
+#include "player.h"
 
 int main(void) {
     GLFWwindow* window;
@@ -96,7 +25,7 @@ int main(void) {
     float screen_ht = 750, screen_wt = 750;
 
     // Create a windowed mode window and its OpenGL context
-    window = glfwCreateWindow(screen_ht, screen_wt, "Amos Rafael J. Cacha", NULL, NULL);
+    window = glfwCreateWindow(screen_ht, screen_wt, "Final Project 4", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -112,59 +41,118 @@ int main(void) {
     TexLightingShader texlighting_shader("Shaders/objshader.vert", "Shaders/objshader.frag");
     ColorShader color_shader("Shaders/nolightshader.vert", "Shaders/nolightshader.frag");
     SkyboxShader skybox_shader("Shaders/skybox.vert", "Shaders/skybox.frag");
+    NormalMapShader normalmap_shader("Shaders/normalmapped.vert", "Shaders/normalmapped.frag");
+
+    /* PLAYER MODEL TEXTURE */
 
     // Create textures
-    std::vector<Texture> firehydrant_tex;
-    firehydrant_tex.push_back(Texture("3D/firehydrant.png"));
-    std::vector<Texture> none;
+    Texture firehydrant_tex("3D/firehydrant.png");
+    std::vector<Texture> firehydrant_textures{ firehydrant_tex };
 
-    // Create obj model VAO resources
-    // Fire hydrant texture and model: https://www.cgtrader.com/free-3d-models/architectural/architectural-street/fire-hydrant-b3144492-f9f6-4608-99da-7ed8ea70708c
-    // Lightbulb model: https://www.cgtrader.com/free-3d-models/architectural/lighting/white-matte-light-bulb-1
-    VertexAttribs lightbulb_res("3D/lightbulb.obj"), firehydrant_res("3D/firehydrant.obj");
+    Texture submarine_tex("3D/player_submarine.png", 0);
+    Texture submarine_normtex("3D/player_submarine_normal.png", 1);
+    std::vector<Texture> submarine_textures {submarine_tex, submarine_normtex};
 
-    // Create cameras
-    ThirdPersonCamera perspective_camera(screen_wt / screen_ht, 15.f);
-    OrthographicCamera orthographic_camera;
+    /* ENEMY MODEL TEXTURE */
+    Texture crab_tex("3D/crab.jpg");
+    std::vector<Texture> crab_textures{ crab_tex };
 
-    PointLight plight(
-        0.0014f,                        // Linear attenuation
-        0.000007f,                      // Quadratic attenuation
-        glm::vec3(0.f, 0.f, 4.f),       // Light source position
-        glm::vec3(1.0f, 1.0f, 1.0f),    // Diffuse color
-        0.4f,                           // Ambient strength
-        glm::vec3(1.0f, 1.0f, 1.0f),    // Ambient color
-        0.7f,                           // Specular strength
-        40.f                            // Specular phong
-    );
+    Texture lobster_tex("3D/lobster.jpg");
+    std::vector<Texture> lobster_textures{ lobster_tex };
+
+    Texture turtle_tex("3D/turtle.jpg");
+    std::vector<Texture> turtle_textures{ turtle_tex };
+
+    Texture shark_tex("3D/shark.jpg");
+    std::vector<Texture> shark_textures{ shark_tex };
+
+    Texture bomb_tex("3D/bomb.png");
+    std::vector<Texture> bomb_textures{ bomb_tex };
+
+    Texture fish_tex("3D/fish.jpg");
+    std::vector<Texture> fish_textures{ fish_tex };
+
+    VertexAttribs submarine_res("3D/player_submarine.obj");
+
+    VertexAttribs crab_res("3D/crab.obj");
+
+    VertexAttribs lobster_res("3D/lobster.obj");
+
+    VertexAttribs turtle_res("3D/turtle.obj");
+
+    VertexAttribs shark_res("3D/shark.obj");
+
+    VertexAttribs bomb_res("3D/bomb.obj");
+
+    VertexAttribs fish_res("3D/fish.obj");
+    
+    Model3D submarine {
+        submarine_res,          // Vertex information object
+        submarine_textures,     // 
+        {0.f, -30.f, 0.f},      // Position
+        {0.f, 0.f, 0.f},              // XYZ rotation
+        {0.5f, 0.5f, 0.5f}         // XYZ scal
+    };
+
+    Model3D crab{
+        crab_res,        // Vertex information object
+        crab_textures,
+        {10.f, -8.f, 0.f},        // Position
+        {0.f, 135.f, 0.f},        // XYZ rotation
+        {0.15f, 0.15f, 0.15f}   // XYZ scale
+    };
+
+    Model3D lobster{
+        lobster_res,        // Vertex information object
+        lobster_textures,
+        {-15.f, -20.f, 0.f},        // Position
+        {135.f, 90.f, 0.f},        // XYZ rotation
+        {0.2f, 0.2f, 0.2f}   // XYZ scale
+    };
+
+    Model3D turtle{
+        turtle_res,        // Vertex information object
+        turtle_textures,
+        {20.f, -3.f, 0.f},        // Position
+        {0.f, 90.f, 0.f},        // XYZ rotation
+        {0.2f, 0.2f, 0.2f}   // XYZ scale
+    };
+
+    Model3D shark{
+        shark_res,        // Vertex information object
+        shark_textures,
+        {-23.f, -35.f, 0.f},        // Position
+        {0.f, 0.f, 0.f},        // XYZ rotation
+        {0.1f, 0.1f, 0.1f}   // XYZ scale
+    };
+
+    Model3D bomb{
+        bomb_res,        // Vertex information object
+        bomb_textures,
+        {-50.f, -10.f, 0.f},        // Position
+        {0.f, 0.f, 0.f},        // XYZ rotation
+        {0.5f, 0.5f, 0.5f}   // XYZ scale
+    };
+
+    Model3D fish{
+        fish_res,        // Vertex information object
+        fish_textures,
+        {40.f, -6.f, 0.f},        // Position
+        {0.f, 0.f, 0.f},        // XYZ rotation
+        {0.3f, 0.3f, 0.3f}   // XYZ scale
+    };
+
+    Player player(submarine, 90.f, 5.f);
 
     DirectionLight dlight(
-        glm::vec3(4.f, 11.f, -3.f),     // Light source position
+        glm::vec3(0.f, 10.f, 0.f),     // Light source position
         glm::vec3(1.0f, 1.0f, 1.0f),    // Diffuse color
         0.4f,                           // Ambient strength
         glm::vec3(1.0f, 1.0f, 1.0f),    // Ambient color
         0.7f,                           // Specular strength
         40.f,                            // Specular phong
-        1.f                             // Intensity
+        0.25f                             // Intensity
     );
-
-    // Create instance of lightbulb object
-    Model3D lightbulb {
-        lightbulb_res,      // Vertex information object
-        none,
-        {0.f, 0.f, 4.f},    // Position
-        {0.f, 0.f, 0.f},    // XYZ rotation
-        {7.f, 7.f, 7.f}     // XYZ scale
-    };
-
-    // Create instance of fire hydrant object
-    Model3D firehydrant {
-        firehydrant_res,        // Vertex information object
-        firehydrant_tex,
-        {0.f, 0.f, 0.f},        // Position
-        {0.f, 0.f, 0.f},        // XYZ rotation
-        {0.04f, 0.04f, 0.04f}   // XYZ scale
-    };
 
     const std::string face_skybox[] {
         "Skybox/uw_rt.jpg",
@@ -178,30 +166,39 @@ int main(void) {
     Skybox skybox(face_skybox);
 
     // Pass state object to input control functions
-    struct State state;
-    glfwSetWindowUserPointer(window, &state);
+    glfwSetWindowUserPointer(window, &player);
 
     // Set input controls to appropriate callback functions
     glfwSetKeyCallback(window, keyboardControl);
     glfwSetCursorPosCallback(window, mouseControl);
     glfwSetMouseButtonCallback(window, mouseButtonControl);
 
+    glEnable(GL_BLEND);
+	glBlendEquation(GL_FUNC_ADD);
+	glBlendColor(0.012, 1.000, 0.043, 1.000);
+
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Update lighting and objects based on program state
-        updateObject(firehydrant, state);
-        updateLight(plight, dlight, lightbulb, state);
-        Camera* active_cam = NULL;
-        active_cam = updateCamera(perspective_camera, orthographic_camera, state);
-
-        skybox_shader.render(skybox, *active_cam);
-
-        // Draw objects
-        texlighting_shader.render(firehydrant, *active_cam, plight, dlight);
-        color_shader.render(lightbulb, *active_cam, glm::vec4(plight.diff_color, 1.0f));
-
+        if (player.is_ortho || player.is_third_ppov) {
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            skybox_shader.render(skybox, player.getActiveCam());
+            normalmap_shader.render(player.sub_model, player.getActiveCam(), player.front_light, dlight);
+        }
+        else {
+			glBlendFuncSeparate(GL_CONSTANT_COLOR, GL_CONSTANT_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			skybox_shader.render(skybox, player.getActiveCam());
+        }
+        
+        texlighting_shader.render(crab, player.getActiveCam(), player.front_light, dlight);
+        texlighting_shader.render(lobster, player.getActiveCam(), player.front_light, dlight);
+        texlighting_shader.render(turtle, player.getActiveCam(), player.front_light, dlight);
+        texlighting_shader.render(shark, player.getActiveCam(), player.front_light, dlight);
+        texlighting_shader.render(bomb, player.getActiveCam(), player.front_light, dlight);
+        texlighting_shader.render(fish, player.getActiveCam(), player.front_light, dlight);
+        
         // Swap front and back buffers
         glfwSwapBuffers(window);
 

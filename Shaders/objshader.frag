@@ -70,5 +70,5 @@ void main() {
 
 	FragColor = (vec4(specCol + diffuse + ambientCol, 1.0)
 		+ vec4(dlight_spec + dlight_diffuse + dlight_ambient, 1.0))
-		* texture(tex0, tex_coord) * tint;
+		* texture(tex0, tex_coord); //* tint;
 }

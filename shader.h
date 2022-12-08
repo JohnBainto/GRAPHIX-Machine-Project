@@ -106,14 +106,3 @@ public:
 
     void render(Model3D& object, Camera& camera, PointLight& point_light, DirectionLight& dir_light);
 };
-
-// Shader program that only applies a color to an object
-class ColorShader: public Shader {
-public:
-    ColorShader(const char* vert_path, const char* frag_path): Shader(vert_path, frag_path) {}
-
-    // Pass a color for the shader to use
-    void setColor(glm::vec4& color);
-
-    void render(Model3D& object, Camera& camera, glm::vec4 color);
-};
