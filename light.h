@@ -29,13 +29,12 @@ public:
     float linear;
     float quadratic;
 
-    PointLight(float strength, glm::vec3 pos, glm::vec3 diff_color,
+    PointLight(float linear, float quadratic, glm::vec3 pos, glm::vec3 diff_color,
         float ambient_str, glm::vec3 ambient_color,
         float spec_str, float spec_phong):
-        Light(pos, diff_color, ambient_str, ambient_color, spec_str, spec_phong) {
-        linear = 1 / strength * 0.0014f;
-        quadratic = 1 / strength * 0.000007;
-    }
+        linear(linear),
+        quadratic(quadratic),
+        Light(pos, diff_color, ambient_str, ambient_color, spec_str, spec_phong) {}
 
     PointLight(float strength, glm::vec3 pos, glm::vec3 color,
         float ambient_str, float spec_str, float spec_phong):

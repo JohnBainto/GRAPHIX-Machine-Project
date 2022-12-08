@@ -9,8 +9,8 @@ void keyboardControl(GLFWwindow* window, int key, int scanCode, int action, int 
 	static const float amount = 1.2f;
 	if (action == GLFW_REPEAT || action == GLFW_PRESS) {
 		switch (key) {
-			case GLFW_KEY_D: player->turnYaw(amount); break;
-			case GLFW_KEY_A: player->turnYaw(-amount); break;
+			case GLFW_KEY_D: player->turnYaw(-amount); break;
+			case GLFW_KEY_A: player->turnYaw(amount); break;
 			case GLFW_KEY_S: player->moveForward(-amount);  break;
 			case GLFW_KEY_W: player->moveForward(amount); break;
 			case GLFW_KEY_Q: player->moveVertically(amount); break;

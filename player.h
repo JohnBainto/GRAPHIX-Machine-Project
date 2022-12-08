@@ -50,7 +50,7 @@ public:
 		pos = cam_1stppov.camera_pos;
 		sub_model.pos = pos;
 		cam_3rdppov.move(pos);
-		cam_birdppov.camera_pos = glm::vec3(pos.x, 0, pos.x);
+		cam_birdppov.move({pos.x, 0, pos.x});
 	}
 
 	inline void moveVertically(float amount) {

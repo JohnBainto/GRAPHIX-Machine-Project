@@ -26,9 +26,9 @@ public:
         return glm::lookAt(camera_pos, camera_center, world_up);
     }
 
-    inline void move(float x_amount = 0.f, float z_amount = 0.f) {
-        camera_pos.x += x_amount;
-        camera_pos.z += z_amount;
+    virtual inline void move(glm::vec3 new_pos) {
+        camera_center = camera_center + (new_pos - camera_pos);
+        camera_pos = new_pos;
     }
 
     // Abstract method for getting the projection matrix of this camera instance's settings
@@ -57,11 +57,6 @@ public:
     inline glm::mat4 getProjectionMatrix() {
         return glm::perspective(glm::radians(fov), screen_ratio, znear, zfar);
     }
-
-    inline void move(glm::vec3 new_pos) {
-        camera_center = camera_center + (new_pos - camera_pos);
-        camera_pos = new_pos;
-    }
 };
 
 class ThirdPersonCamera: public PerspectiveCamera {
@@ -83,9 +78,14 @@ public:
         // Bind the range of the pitch and yaw to be between -89.9 to 89.9 and -360 to 360 respectively
         yaw = (yaw >= 360 || yaw <= -360) ? 0 : yaw;
         pitch = (pitch >= 90) ? 89.9 : (pitch <= -90) ? -89.9 : pitch;
-        camera_pos.y = distance * std::sin(glm::radians(pitch));
-        camera_pos.z = distance * std::sin(glm::radians(yaw)) * std::cos(glm::radians(pitch));
-        camera_pos.x = distance * std::cos(glm::radians(yaw)) * std::cos(glm::radians(pitch));
+        camera_pos.y = camera_center.y + distance * std::sin(glm::radians(pitch));
+        camera_pos.z = camera_center.z + distance * std::sin(glm::radians(yaw)) * std::cos(glm::radians(pitch));
+        camera_pos.x = camera_center.x + distance * std::cos(glm::radians(yaw)) * std::cos(glm::radians(pitch));
+    }
+
+    inline void move(glm::vec3 new_pos) {
+        camera_pos = camera_pos + (new_pos - camera_center);
+        camera_center = new_pos;
     }
 };
 
@@ -94,7 +94,7 @@ public:
     FirstPersonCamera(glm::vec3 camera_pos, glm::vec3 camera_center = glm::vec3(0, 0, 0),
         float fov = 60.f, float znear = 0.1f, float zfar = 50.f, glm::vec3 world_up = glm::vec3(0, 1, 0)):
         PerspectiveCamera(camera_pos, camera_center, fov, znear, zfar, world_up) {
-
+            
     }
 
     inline void moveForward(float amount) {

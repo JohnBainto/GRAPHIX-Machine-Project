@@ -64,6 +64,14 @@ int main(void) {
         {0.04f, 0.04f, 0.04f}   // XYZ scale
     };
 
+    Model3D reference {
+        firehydrant_res,        // Vertex information object
+        firehydrant_textures,
+        {-2.f, -5.f, -2.f},        // Position
+        {0.f, 0.f, 0.f},        // XYZ rotation
+        {0.025f, 0.025f, 0.025f}   // XYZ scale
+    };
+
     Model3D submarine {
         submarine_res,
         submarine_textures,
@@ -123,6 +131,9 @@ int main(void) {
         else {
 
         }
+
+        texlighting_shader.render(reference, player.cam_3rdppov, player.front_light, dlight);
+
         //submarine.pos = player.getActiveCam().camera_center;
         //submarine.pos.y -= 0.01;
         //texlighting_shader.render(submarine, player.getActiveCam(), player.front_light, dlight);
