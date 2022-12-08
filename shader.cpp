@@ -168,30 +168,3 @@ void NormalMapShader::render(Model3D& object, Camera& camera, PointLight& point_
     // Draw the elements
     glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.count);
 }
-
-// Pass a color for the shader to use
-void ColorShader::setColor(glm::vec4 &color) {
-    unsigned int color_loc = glGetUniformLocation(shader_program, "color");
-    glUniform4fv(color_loc, 1, glm::value_ptr(color));
-}
-
-void ColorShader::render(Model3D& object, Camera& camera, glm::vec4 color) {
-    glUseProgram(shader_program);
-
-    // Get transformation, projection, and view matrixes
-    glm::mat4 transformation = object.getTransformationMatrix();
-    glm::mat4 projection = camera.getProjectionMatrix();
-    glm::mat4 view = camera.getViewMatrix();
-
-    // Use the given VAO in the model object to draw
-    glBindVertexArray(object.vertex_attribs.VAO);
-
-    // Pass variables to shader
-    setTransform(transformation);
-    setProjection(projection);
-    setView(view);
-    setColor(color);
-
-    // Draw the elements
-    glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.count);
-}

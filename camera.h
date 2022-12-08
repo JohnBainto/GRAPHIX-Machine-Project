@@ -94,7 +94,7 @@ public:
     FirstPersonCamera(glm::vec3 camera_pos, glm::vec3 camera_center = glm::vec3(0, 0, 0),
         float fov = 60.f, float znear = 0.1f, float zfar = 50.f, glm::vec3 world_up = glm::vec3(0, 1, 0)):
         PerspectiveCamera(camera_pos, camera_center, fov, znear, zfar, world_up) {
-            
+            turnYaw(0.f);
     }
 
     inline void moveForward(float amount) {

@@ -52,8 +52,8 @@ void mouseControl(GLFWwindow* window, double xPos, double yPos) {
 // Handles the user mouse inputs and makes the program repond accordingly.
 void mouseButtonControl(GLFWwindow* window, int button, int action, int mods) {
 	Player* player = (Player*) glfwGetWindowUserPointer(window);
-	if (!player->is_ortho && player->is_third_ppov)
-		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	else
+	if (player->is_ortho || !player->is_third_ppov)
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	else
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }

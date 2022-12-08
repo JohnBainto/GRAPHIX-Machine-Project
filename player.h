@@ -22,19 +22,24 @@ public:
 	FirstPersonCamera cam_1stppov;
 	OrthographicCamera cam_birdppov;
 
-	Player(Model3D& sub_model):
+	float rot_offset;
+	float point_offset;
+
+	Player(Model3D& sub_model, float rot_offset, float point_offset):
 		pos(0, -5, 0),
 		is_ortho(false),
 		is_third_ppov(true),
 		light_intensity(1),
 		sub_model(sub_model),
 		front_light(light_intensity, pos, {1.f, 1.f, 1.f}, 0.1f, 0.3f, 80.f),
-		cam_3rdppov(15.f, pos, 60.f, 0.1f, 50.f),
-		cam_1stppov(pos, glm::vec3(pos.x, pos.y, pos.z - 1)),
-		cam_birdppov(glm::vec3(pos.x, 5, pos.z)) {
+		cam_3rdppov(15.f, pos, 60.f, 0.1f, 25.f),
+		cam_1stppov(pos, glm::vec3(pos.x, pos.y, pos.z - 1), 60.f, 0.1f, 100.f),
+		cam_birdppov(glm::vec3(pos.x, 5, pos.z)),
+		rot_offset(rot_offset),
+		point_offset(point_offset) {
 		sub_model.pos = pos;
-        sub_model.rot.y = -cam_1stppov.yaw;
-		glm::vec3 offset = 1.f * glm::normalize(cam_1stppov.camera_center - cam_1stppov.camera_pos);
+        sub_model.rot.y = -cam_1stppov.yaw + rot_offset;
+		glm::vec3 offset = point_offset * glm::normalize(cam_1stppov.camera_center - cam_1stppov.camera_pos);
 		front_light.pos = cam_1stppov.camera_center + offset;
 	}
 
@@ -54,11 +59,9 @@ public:
 
 		switch(light_intensity) {
 			case 1: front_light.adjustStrength(1.f); break;
-			case 2: front_light.adjustStrength(50.f); break;
-			case 3: front_light.adjustStrength(10000.f); break;
+			case 2: front_light.adjustStrength(10.f); break;
+			case 3: front_light.adjustStrength(1000.f); break;
 		}
-
-		cout << "Light intensity: " << light_intensity << endl;
 	}
 
 	
@@ -67,9 +70,9 @@ public:
 		pos = cam_1stppov.camera_pos;
 		sub_model.pos = pos;
 		cam_3rdppov.move(pos);
-		cam_birdppov.move({pos.x, 0, pos.x});
+		cam_birdppov.moveXZ(pos.x, pos.z);
 
-		glm::vec3 offset = 1.f * glm::normalize(cam_1stppov.camera_center - cam_1stppov.camera_pos);
+		glm::vec3 offset = point_offset * glm::normalize(cam_1stppov.camera_center - cam_1stppov.camera_pos);
 		front_light.pos = cam_1stppov.camera_center + offset;
 	}
 
@@ -81,19 +84,19 @@ public:
 		pos = cam_1stppov.camera_pos;
 		sub_model.pos = pos;
 		cam_3rdppov.move(pos);
-		cam_birdppov.camera_pos = glm::vec3(pos.x, 5, pos.z);
+		cam_birdppov.moveXZ(pos.x, pos.z);
 
 		cout << "Submarine Depth: " << cam_1stppov.camera_pos.y << endl;
 
-		glm::vec3 offset = 1.f * glm::normalize(cam_1stppov.camera_center - cam_1stppov.camera_pos);
+		glm::vec3 offset = point_offset * glm::normalize(cam_1stppov.camera_center - cam_1stppov.camera_pos);
 		front_light.pos = cam_1stppov.camera_center + offset;
 	}
 
-	inline void turnYaw(float h_amount) {
-		cam_1stppov.turnYaw(h_amount);
-		sub_model.rot.y = -cam_1stppov.yaw;
+	inline void turnYaw(float amount) {
+		cam_1stppov.turnYaw(amount);
+		sub_model.rot.y = -cam_1stppov.yaw + rot_offset;
 
-		glm::vec3 offset = 1.f * glm::normalize(cam_1stppov.camera_center - cam_1stppov.camera_pos);
+		glm::vec3 offset = point_offset * glm::normalize(cam_1stppov.camera_center - cam_1stppov.camera_pos);
 		front_light.pos = cam_1stppov.camera_center + offset;
 	}
 
