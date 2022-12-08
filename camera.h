@@ -125,7 +125,7 @@ private:
 public:
     OrthographicCamera(glm::vec3 pos, float zfar = 50.f, float znear = 0.1, float xmin = -10.f,
         float xmax = 10.f, float ymin = -10.f, float ymax = 10.f):
-        Camera(glm::vec3(pos.x, 0, pos.z), glm::vec3(pos.x, -1, pos.z), znear, zfar),
+        Camera(pos, glm::vec3(pos.x, -1, pos.z), znear, zfar),
         xmin(xmin),
         xmax(xmax),
         ymin(ymin),
@@ -135,4 +135,10 @@ public:
     inline glm::mat4 getProjectionMatrix() {
         return glm::ortho(xmin, xmax, ymin, ymax, znear, zfar);
     }
+
+	inline void moveXZ(float x, float z) {
+        glm::vec3 new_pos = {x, camera_pos.y, z};
+		camera_center = camera_center + (new_pos - camera_pos);
+		camera_pos = new_pos;
+	}
 };

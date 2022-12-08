@@ -40,12 +40,22 @@ int main(void) {
     SkyboxShader skybox_shader("Shaders/skybox.vert", "Shaders/skybox.frag");
     NormalMapShader normalmap_shader("Shaders/normalmapped.vert", "Shaders/normalmapped.frag");
 
+    /* PLAYER MODEL TEXTURE */
+
     // Create textures
     Texture firehydrant_tex("3D/firehydrant.png");
+    std::vector<Texture> firehydrant_textures{ firehydrant_tex };
+
     std::vector<Texture> submarine_textures {
         Texture("3D/player_subamarine.png", 0),
         Texture("3D/player_subamarine_normal.png", 1)
     };
+    
+
+    /* ENEMY MODEL TEXTURE */
+    Texture crab_tex("3D/crab.jpg");
+    std::vector<Texture> crab_textures{ crab_tex };
+
 
     // Create obj model VAO resources
     // Fire hydrant texture and model: https://www.cgtrader.com/free-3d-models/architectural/architectural-street/fire-hydrant-b3144492-f9f6-4608-99da-7ed8ea70708c
@@ -54,7 +64,8 @@ int main(void) {
 
     VertexAttribs submarine_res("3D/player_submarine.obj");
 
-    std::vector<Texture> firehydrant_textures {firehydrant_tex};
+    VertexAttribs crab_res("3D/crab.obj");
+
 
     Model3D firehydrant {
         firehydrant_res,        // Vertex information object
@@ -72,6 +83,14 @@ int main(void) {
         {0.025f, 0.025f, 0.025f}   // XYZ scale
     };
 
+	Model3D pointer{
+		firehydrant_res,        // Vertex information object
+		firehydrant_textures,
+		{-2.f, -5.f, -2.f},        // Position
+		{0.f, 0.f, 0.f},        // XYZ rotation
+		{0.025f, 0.005f, 0.025f}   // XYZ scale
+	};
+
     Model3D submarine {
         submarine_res,
         submarine_textures,
@@ -80,10 +99,18 @@ int main(void) {
         {15.f, 15.f, 15.f}
     };
 
+    Model3D crab{
+        crab_res,        // Vertex information object
+        crab_textures,
+        {10.f, -8.f, 0.f},        // Position
+        {0.f, 0.f, 0.f},        // XYZ rotation
+        {0.1f, 0.1f, 0.1f}   // XYZ scale
+    };
+
     Player player(firehydrant);
 
     DirectionLight dlight(
-        glm::vec3(4.f, 11.f, -3.f),     // Light source position
+        glm::vec3(0.f, 10.f, 0.f),     // Light source position
         glm::vec3(1.0f, 1.0f, 1.0f),    // Diffuse color
         0.4f,                           // Ambient strength
         glm::vec3(1.0f, 1.0f, 1.0f),    // Ambient color
@@ -132,8 +159,12 @@ int main(void) {
 
         }
 
-        texlighting_shader.render(reference, player.cam_3rdppov, player.front_light, dlight);
+        texlighting_shader.render(reference, player.getActiveCam(), player.front_light, dlight);
 
+        pointer.pos = player.cam_1stppov.camera_center;
+		texlighting_shader.render(pointer, player.getActiveCam(), player.front_light, dlight);
+        texlighting_shader.render(crab, player.getActiveCam(), player.front_light, dlight);
+        
         //submarine.pos = player.getActiveCam().camera_center;
         //submarine.pos.y -= 0.01;
         //texlighting_shader.render(submarine, player.getActiveCam(), player.front_light, dlight);

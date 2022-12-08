@@ -8,19 +8,34 @@ void keyboardControl(GLFWwindow* window, int key, int scanCode, int action, int 
 	Player* player = (Player*) glfwGetWindowUserPointer(window);
 	static const float amount = 1.2f;
 	if (action == GLFW_REPEAT || action == GLFW_PRESS) {
-		switch (key) {
-			case GLFW_KEY_D: player->turnYaw(-amount); break;
-			case GLFW_KEY_A: player->turnYaw(amount); break;
-			case GLFW_KEY_S: player->moveForward(-amount);  break;
-			case GLFW_KEY_W: player->moveForward(amount); break;
-			case GLFW_KEY_Q: player->moveVertically(amount); break;
-			case GLFW_KEY_E: player->moveVertically(-amount); break;
-
+		if (!player->is_ortho) {
+			switch (key) {
+				case GLFW_KEY_D: player->turnYaw(amount); break;
+				case GLFW_KEY_A: player->turnYaw(-amount); break;
+				case GLFW_KEY_S: player->moveForward(-amount);  break;
+				case GLFW_KEY_W: player->moveForward(amount); break;
+				case GLFW_KEY_Q: player->moveVertically(amount); break;
+				case GLFW_KEY_E: player->moveVertically(-amount); break;
+			}
+		}
+		else {
+            switch (key) {
+				case GLFW_KEY_D: player->moveOrtho(0, -amount); break;
+				case GLFW_KEY_A: player->moveOrtho(0, amount); break;
+				case GLFW_KEY_S: player->moveOrtho(amount, 0);  break;
+				case GLFW_KEY_W: player->moveOrtho(-amount, 0); break;
+            }
+		}
+        switch (key) {
 			case GLFW_KEY_1: player->is_third_ppov = !player->is_third_ppov; break;
-			case GLFW_KEY_2: player->is_ortho = !player->is_ortho; break;
+			case GLFW_KEY_2:	
+				player->is_ortho = !player->is_ortho;
+				if (player->is_ortho)
+					player->cam_birdppov.moveXZ(player->pos.x, player->pos.z);
+				break;
 
 			case GLFW_KEY_F: player->nextIntensity(); break;
-		}
+        }
 	}
 }
 

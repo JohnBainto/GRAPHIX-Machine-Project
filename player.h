@@ -1,5 +1,8 @@
 #pragma once
 
+#include <iostream>
+using namespace std;
+
 #include "common.h"
 #include "model.h"
 #include "camera.h"
@@ -28,8 +31,9 @@ public:
 		front_light(light_intensity, glm::vec3(pos.x + 3, pos.y + 3, pos.z + 3), {1.f, 1.f, 1.f}, 0.3f, 0.3f, 80.f),
 		cam_3rdppov(15.f, pos, 60.f, 0.1f, 50.f),
 		cam_1stppov(pos, glm::vec3(pos.x, pos.y, pos.z - 1)),
-		cam_birdppov(pos) {
+		cam_birdppov(glm::vec3(pos.x, 5, pos.z)) {
 		sub_model.pos = pos;
+        sub_model.rot.y = -cam_1stppov.yaw;
 	}
 
 	Camera& getActiveCam() {
@@ -54,16 +58,25 @@ public:
 	}
 
 	inline void moveVertically(float amount) {
+		if (cam_1stppov.camera_pos.y + amount > 0)
+			amount = 0 - cam_1stppov.camera_pos.y;
+
 		cam_1stppov.moveVertically(amount);
 		pos = cam_1stppov.camera_pos;
 		sub_model.pos = pos;
 		cam_3rdppov.move(pos);
-		cam_birdppov.camera_pos = glm::vec3(pos.x, 0, pos.x);
+		cam_birdppov.camera_pos = glm::vec3(pos.x, 5, pos.z);
+
+		cout << "Submarine Depth: " << cam_1stppov.camera_pos.y << endl;
 	}
 
 	inline void turnYaw(float h_amount) {
 		cam_1stppov.turnYaw(h_amount);
-		sub_model.rot.y = cam_1stppov.yaw;
+		sub_model.rot.y = -cam_1stppov.yaw;
 	}
 
+	inline void moveOrtho(float x_amount, float z_amount) {
+
+		cam_birdppov.moveXZ(cam_birdppov.camera_pos.x + x_amount, cam_birdppov.camera_pos.z + z_amount);
+	}
 };
