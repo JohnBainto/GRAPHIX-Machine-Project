@@ -26,9 +26,9 @@ public:
 		pos(0, -5, 0),
 		is_ortho(false),
 		is_third_ppov(true),
-		light_intensity(0),
+		light_intensity(1),
 		sub_model(sub_model),
-		front_light(light_intensity, glm::vec3(pos.x + 3, pos.y + 3, pos.z + 3), {1.f, 1.f, 1.f}, 0.3f, 0.3f, 80.f),
+		front_light(light_intensity, pos, {1.f, 1.f, 1.f}, 0.3f, 0.3f, 80.f),
 		cam_3rdppov(15.f, pos, 60.f, 0.1f, 50.f),
 		cam_1stppov(pos, glm::vec3(pos.x, pos.y, pos.z - 1)),
 		cam_birdppov(glm::vec3(pos.x, 5, pos.z)) {
@@ -46,7 +46,9 @@ public:
 	}
 
 	inline void nextIntensity() {
-		light_intensity = light_intensity + 1 % 3;
+		light_intensity = light_intensity + 1 % 4;
+		if (light_intensity == 0)
+			light_intensity = 1;
 	}
 
 	inline void moveForward(float amount) {
@@ -76,7 +78,6 @@ public:
 	}
 
 	inline void moveOrtho(float x_amount, float z_amount) {
-
 		cam_birdppov.moveXZ(cam_birdppov.camera_pos.x + x_amount, cam_birdppov.camera_pos.z + z_amount);
 	}
 };
