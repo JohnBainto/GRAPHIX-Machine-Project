@@ -180,7 +180,7 @@ int main(void) {
         glm::vec3(1.0f, 1.0f, 1.0f),    // Ambient color
         0.7f,                           // Specular strength
         40.f,                            // Specular phong
-        1.f                             // Intensity
+        0.25f                             // Intensity
     );
 
     const std::string face_skybox[] {

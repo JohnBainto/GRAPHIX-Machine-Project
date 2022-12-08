@@ -39,8 +39,13 @@ public:
     PointLight(float strength, glm::vec3 pos, glm::vec3 color,
         float ambient_str, float spec_str, float spec_phong):
         Light(pos, color, ambient_str, color, spec_str, spec_phong) {
-        linear = 1 / strength * 0.0014f;
-        quadratic = 1 / strength * 0.000007;
+        linear = 1 / strength * 0.14f;
+        quadratic = 1 / strength * 0.0007;
+    }
+
+    inline void adjustStrength(float strength) {
+		linear = 1 / strength * 0.14f;
+		quadratic = 1 / strength * 0.0007;
     }
 };
 
