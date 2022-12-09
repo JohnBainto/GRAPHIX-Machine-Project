@@ -35,11 +35,14 @@ void main() {
 	vec4 color0 = texture(tex0, tex_coord);
 	vec4 color1 = texture(tex1, tex_coord);
 	
+	// Use the pixel color of the textures in the greater texture slot numbers first if it is not transparent
 	if (color1.a > 0.1)
+		// Blend the texture with the one below
 		pixel_color = color1 * color1.a + color0 * (1 - color1.a);
 	else
 		pixel_color = color0;
 
+	// If the pixel value is too transparent, do not render it
 	if (pixel_color.a < 0.1)
 		discard;
 
@@ -48,7 +51,7 @@ void main() {
 	normal = normalize(TBN * normal);
 
 	// Calculate light direction
-	vec3 lightDir = normalize(plight_pos - frag_pos);
+	vec3 plight_dir = normalize(plight_pos - frag_pos);
 	vec3 dlight_dir = normalize(-dlight_dir);
 
 	// Calculate the distance from the light source to the object
@@ -63,7 +66,7 @@ void main() {
 		dlight_i = 0.1;
 
 	// Calculate diffusion and adjust diffusion by the intensity
-	vec3 diffuse = max(dot(normal, lightDir), 0.0f) * plight_color * intensity;
+	vec3 diffuse = max(dot(normal, plight_dir), 0.0f) * plight_color * intensity;
 	vec3 dlight_diffuse = max(dot(normal, dlight_dir), 0.0f) * dlight_color * dlight_i;
 
 	// Calculate ambient light and adjust by the intensity
@@ -72,7 +75,7 @@ void main() {
 
 	// Calculate specular
 	vec3 viewDir = normalize(camera_pos - frag_pos);
-	vec3 reflectDir = reflect(-lightDir, normal);
+	vec3 reflectDir = reflect(-plight_dir, normal);
 	float spec = pow(max(dot(reflectDir, viewDir), 0.1f), plight_spec_phong);
 
 	// Adjust specular by the intensity
