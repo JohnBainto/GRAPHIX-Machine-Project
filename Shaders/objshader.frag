@@ -21,6 +21,9 @@ uniform vec3 dlight_amb_color;
 uniform float dlight_spec_str;
 uniform float dlight_spec_phong;
 
+uniform int use_color;
+uniform vec4 color;
+
 in vec2 tex_coord;
 in vec3 norm_coord;
 in vec3 frag_pos;
@@ -28,6 +31,10 @@ in vec3 frag_pos;
 out vec4 FragColor; //Returns a color, vec4 means RGBA
 
 void main() {
+	vec4 pixel_color = texture(tex0, tex_coord);
+	if (use_color != 0)
+		pixel_color = color;
+
 	// Calculate normal direction
 	vec3 normal = normalize(norm_coord);
 
@@ -68,5 +75,5 @@ void main() {
 
 	FragColor = (vec4(specCol + diffuse + ambientCol, 1.0)
 		+ vec4(dlight_spec + dlight_diffuse + dlight_ambient, 1.0))
-		* texture(tex0, tex_coord);
+		* pixel_color;
 }

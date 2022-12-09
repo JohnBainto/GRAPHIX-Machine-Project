@@ -88,6 +88,9 @@ public:
     // Pass a texture variable for the shader to use
     void setTexture(Texture& tex);
 
+    // Pass a color variable for the shader to use instead of the texture
+    void setColor(bool use_color, glm::vec4& tex);
+
     // Pass a point light for the shader to use
     void setPointLight(PointLight& light_source, glm::vec3& camera_pos);
 
@@ -95,7 +98,8 @@ public:
     void setDirectionLight(DirectionLight& light_source, glm::vec3& camera_pos);
 
     // Render a model 3d object with lighting and texture
-    void render(Model3D& object, Camera& camera, PointLight& point_light, DirectionLight& dir_light);
+    void render(Model3D& object, Camera& camera, PointLight& point_light,
+        DirectionLight& dir_light, glm::vec4 color = {-1, -1, -1, -1});
 };
 
 // Shader program that applies a texture, normal mapping, point lighting, and directional lighting to an object
