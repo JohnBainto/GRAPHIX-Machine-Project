@@ -8,6 +8,7 @@ void keyboardControl(GLFWwindow* window, int key, int scanCode, int action, int 
 	Player* player = (Player*) glfwGetWindowUserPointer(window);
 	static const float amount = 1.2f;
 	if (action == GLFW_REPEAT || action == GLFW_PRESS) {
+		// If the player is in 1st or 3rd person pov, allow them to control the ship
 		if (!player->is_ortho) {
 			switch (key) {
 				case GLFW_KEY_D: player->turnYaw(amount); break;
@@ -18,6 +19,7 @@ void keyboardControl(GLFWwindow* window, int key, int scanCode, int action, int 
 				case GLFW_KEY_E: player->moveVertically(-amount); break;
 			}
 		}
+		// Otherwise, allow them to the orthographical camera
 		else {
             switch (key) {
 				case GLFW_KEY_D: player->moveOrtho(0, -amount); break;
@@ -26,10 +28,12 @@ void keyboardControl(GLFWwindow* window, int key, int scanCode, int action, int 
 				case GLFW_KEY_W: player->moveOrtho(-amount, 0); break;
             }
 		}
+		// Toggle between camera modes and light intensities
         switch (key) {
 			case GLFW_KEY_1: player->is_third_ppov = !player->is_third_ppov; break;
 			case GLFW_KEY_2:	
 				player->is_ortho = !player->is_ortho;
+				// If the player is switching to orthographic view, reset the camera's position
 				if (player->is_ortho)
 					player->cam_birdppov.moveXZ(player->pos.x, player->pos.z);
 				break;
@@ -47,11 +51,8 @@ void mouseControl(GLFWwindow* window, double xPos, double yPos) {
 		player->cam_3rdppov.rotate((xPos - last_mouse_x) * amount, (yPos - last_mouse_y) * amount);
 	last_mouse_x = xPos;
 	last_mouse_y = yPos;
-}
 
-// Handles the user mouse inputs and makes the program repond accordingly.
-void mouseButtonControl(GLFWwindow* window, int button, int action, int mods) {
-	Player* player = (Player*) glfwGetWindowUserPointer(window);
+	// Disable the mouse if the player is in third person perspective
 	if (player->is_ortho || !player->is_third_ppov)
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	else

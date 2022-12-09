@@ -18,6 +18,7 @@ typedef struct Texture {
         glActiveTexture(GL_TEXTURE0 + tex_unit);
         glBindTexture(GL_TEXTURE_2D, texture);
         
+        // If the image has an alpha channel use RGBA
         if (color_channels >= 4)
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img_width, img_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_bytes);
         else
@@ -25,6 +26,8 @@ typedef struct Texture {
 
         glGenerateMipmap(GL_TEXTURE_2D);
         glEnable(GL_DEPTH_TEST);
+
+        // Cleanup
         stbi_image_free(tex_bytes);
     }
 } Texture;

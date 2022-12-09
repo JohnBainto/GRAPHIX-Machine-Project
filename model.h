@@ -21,6 +21,7 @@ typedef struct VertexAttribs {
 
         bool success = tinyobj::LoadObj(&attributes, &shapes, &materials, &warning, &error, model_path);
 
+        // Calculate global normals
         std::vector<glm::vec3> tangents;
         std::vector<glm::vec3> bitangents;
 
@@ -30,6 +31,7 @@ typedef struct VertexAttribs {
                 tinyobj::index_t vData2 = shape.mesh.indices[i + 1];
                 tinyobj::index_t vData3 = shape.mesh.indices[i + 2];
 
+                // Get 3 vertices and uvs that belong to the same triangle
                 glm::vec3 v1 = glm::vec3(
                     attributes.vertices[vData1.vertex_index * 3],
                     attributes.vertices[vData1.vertex_index * 3 + 1],
@@ -63,6 +65,7 @@ typedef struct VertexAttribs {
                     attributes.texcoords[vData3.texcoord_index * 2 + 1]
                 );
 
+                // Calculate for tan and bitan
                 glm::vec3 deltaPos1 = v2 - v1;
                 glm::vec3 deltaPos2 = v3 - v1;
                 glm::vec2 deltaUV1 = uv2 - uv1;
@@ -73,10 +76,12 @@ typedef struct VertexAttribs {
                 glm::vec3 tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y) * r;
                 glm::vec3 bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x) * r;
 
+                // Pushed 3 times because each triangle will share the same tan
                 tangents.push_back(tangent);
                 tangents.push_back(tangent);
                 tangents.push_back(tangent);
 
+                // Pushed 3 times because each triangle will share the same bitan
                 bitangents.push_back(bitangent);
                 bitangents.push_back(bitangent);
                 bitangents.push_back(bitangent);
@@ -86,6 +91,7 @@ typedef struct VertexAttribs {
         auto tan_it = std::begin(tangents);
 		auto bitan_it = std::begin(bitangents);
 
+        // Push loaded values into a vector
         for (auto& shape : shapes) {
             // Load vertex data using indices of what is available
             for (int i = 0; i < shape.mesh.indices.size(); i++) {
@@ -104,7 +110,6 @@ typedef struct VertexAttribs {
                 full_vertex_data.push_back(attributes.vertices[vertexIndex + 1]);
                 full_vertex_data.push_back(attributes.vertices[vertexIndex + 2]);
 
-
                 // NXNYNZ
                 full_vertex_data.push_back(attributes.normals[normalIndex]);
                 full_vertex_data.push_back(attributes.normals[normalIndex + 1]);
@@ -114,10 +119,12 @@ typedef struct VertexAttribs {
                 full_vertex_data.push_back(attributes.texcoords[uvIndex]);
                 full_vertex_data.push_back(attributes.texcoords[uvIndex + 1]);
 
+                // TAN
                 full_vertex_data.push_back(tan_it->x);
                 full_vertex_data.push_back(tan_it->y);
                 full_vertex_data.push_back(tan_it->z);
 
+                // BITAN
                 full_vertex_data.push_back(bitan_it->x);
                 full_vertex_data.push_back(bitan_it->y);
                 full_vertex_data.push_back(bitan_it->z);
@@ -125,9 +132,7 @@ typedef struct VertexAttribs {
                 tan_it++;
                 bitan_it++;
             }
-       }
-
-        count = full_vertex_data.size() / 14;
+        }
 
         // Initialize VAO and VBO
         glGenVertexArrays(1, &VAO);
@@ -136,6 +141,7 @@ typedef struct VertexAttribs {
         glBindVertexArray(VAO);
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
+        // Pass vector of data to VBO object
         glBufferData(
             GL_ARRAY_BUFFER,
             sizeof(GL_FLOAT) * full_vertex_data.size(),
@@ -143,10 +149,11 @@ typedef struct VertexAttribs {
             GL_STATIC_DRAW
         );
 
-        // Size of vector depends on which attributes were available
+        // Size of each vector XYZ,NXNYNZ,UV,TXTYTZ,BXBYBZ
         int vector_size = 14;
+        count = full_vertex_data.size() / vector_size;
 
-        // Define how to interprete the VBO for position
+        // Define how to interpret the VBO for position
         glVertexAttribPointer(
             0, //Position
             3, //Stands for X Y Z 
@@ -156,22 +163,23 @@ typedef struct VertexAttribs {
             (void*) 0
         );
 
+        // Skip 3 elements XYZ
         GLintptr normptr = 3 * sizeof(GL_FLOAT);
 
-        // Define how to interprete the VBO for the UV
+        // Define how to interpret the VBO for normals
         glVertexAttribPointer(
             1, // Normal X Y Z
             3, // Stands for normal X Y Z
             GL_FLOAT,
             GL_FALSE,
-            vector_size * sizeof(GL_FLOAT), // X Y Z U and V
+            vector_size * sizeof(GL_FLOAT),
             (void*) normptr
         );
 
-        // Skip 6 elements if normals are available other wise only skip 3
+        // Skip 6 elements XYZ,NXNYNZ
         GLintptr uvptr = 6 * sizeof(GL_FLOAT);
 
-        // Define how to interprete the VBO for the UV
+        // Define how to interpret the VBO for texture
         glVertexAttribPointer(
             2, // Texture UV
             2, //Stands for U V
@@ -181,29 +189,33 @@ typedef struct VertexAttribs {
             (void*) uvptr
         );
 
+        // Skip 8 elements XYZ,NXNYNZ,UV
         GLintptr tanptr = 8 * sizeof(GL_FLOAT);
 
+        // Define how to interpret the VBO for tangent
         glVertexAttribPointer(
             3, // Tan
             3, //Stands for U V
             GL_FLOAT,
             GL_FALSE,
-            14 * sizeof(GL_FLOAT), // X Y Z U and V
+            vector_size * sizeof(GL_FLOAT),
             (void*) tanptr
         );
 
+        // Skip 8 elements XYZ,NXNYNZ,UV,TXTYTZ
         GLintptr bitanptr = 11 * sizeof(GL_FLOAT);
 
+        // Define how to interprete the VBO for bitangent
         glVertexAttribPointer(
             4, // Bitan
             3, //Stands for U V
             GL_FLOAT,
             GL_FALSE,
-            14 * sizeof(GL_FLOAT), // X Y Z U and V
+            vector_size * sizeof(GL_FLOAT),
             (void*) bitanptr
         );
 
-        // Enable the vertex attrib array of what is available
+        // Enable the vertex attrib arrays
         glEnableVertexAttribArray(0);
         glEnableVertexAttribArray(1);
         glEnableVertexAttribArray(2);
@@ -214,7 +226,7 @@ typedef struct VertexAttribs {
         glBindVertexArray(0);
     }
 
-    // Destructor to free VAOs and VBOs
+    // Deconstructor to free VAOs and VBOs
     ~VertexAttribs() {
         glDeleteVertexArrays(1, &VAO);
         glDeleteBuffers(1, &VBO);
@@ -223,7 +235,7 @@ typedef struct VertexAttribs {
 
 // Represents an instance of a 3D object in the world
 typedef struct Model3D {
-    // Different instances can share the same vertex_attribs thus a non-owning reference
+    // Different instances can share the same vertex_attribs and textures so it only take a non-owning ref
     VertexAttribs& vertex_attribs;
     std::vector<Texture>& textures;
     glm::vec3 pos;

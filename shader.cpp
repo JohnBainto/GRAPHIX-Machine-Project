@@ -2,7 +2,7 @@
 
 #include "shader.h"
 
-// Base wrapper object for a shader
+// Pass a transform matrix for the shader to use
 void Shader::setTransform(glm::mat4& transformation_matrix) {
     unsigned int transformation_loc = glGetUniformLocation(shader_program, "transform");
     glUniformMatrix4fv(transformation_loc, 1, GL_FALSE, glm::value_ptr(transformation_matrix));
@@ -20,23 +20,30 @@ void Shader::setProjection(glm::mat4& projection_matrix) {
     glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(projection_matrix));
 }
 
+// Render a skybox object
 void SkyboxShader::render(Skybox& skybox, Camera& camera) {
+    // Temporarily disable depth testing
     glDepthMask(GL_FALSE);
     glDepthFunc(GL_LEQUAL);
+    
     glUseProgram(shader_program);
 
+    // Get the given skybox view and projection matrix
     glm::mat4 skybox_view = skybox.getSkyblockViewMatrix(camera);
-
     glm::mat4 projection_matrix = camera.getProjectionMatrix();
+
+    // Pass variables to shader
     setProjection(projection_matrix);
     setView(skybox_view);
 
+    // Pass the texture to the shader
     glBindVertexArray(skybox.skybox_vao);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.skybox_tex);
 
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
+    // Temporarily reenable depth testing
     glDepthMask(GL_TRUE);
     glDepthFunc(GL_LESS);
 }
@@ -107,14 +114,8 @@ void TexLightingShader::setDirectionLight(DirectionLight& light_source, glm::vec
     glUniform1f(dlight_spec_phong_loc, light_source.spec_phong);
 }
 
-void TexLightingShader::setTint(glm::vec4& color) {
-    unsigned int tint_loc = glGetUniformLocation(shader_program, "tint");
-    glUniform4fv(tint_loc, 1, glm::value_ptr(color));
-}
-
-// Overloaded draw function to a draw a model with lighting and texture
-void TexLightingShader::render(Model3D& object, Camera& camera, PointLight& point_light,
-    DirectionLight& dir_light, glm::vec4 color) {
+// Render a model 3d object with lighting and texture
+void TexLightingShader::render(Model3D& object, Camera& camera, PointLight& point_light, DirectionLight& dir_light) {
     glUseProgram(shader_program);
 
     // Get transformation, projection, and view matrixes
@@ -129,8 +130,7 @@ void TexLightingShader::render(Model3D& object, Camera& camera, PointLight& poin
     setTransform(transformation);
     setProjection(projection);
     setView(view);
-    setTexture(object.textures[0]);
-    setTint(color);
+    setTexture(object.textures[0]); // For the moment, only the first value will be used as the base texture
     setPointLight(point_light, camera.camera_pos);
     setDirectionLight(dir_light, camera.camera_pos);
 
@@ -138,6 +138,7 @@ void TexLightingShader::render(Model3D& object, Camera& camera, PointLight& poin
     glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.count);
 }
 
+// Set the normal texture
 void NormalMapShader::setNormalTexture(Texture& norm_tex) {
     glActiveTexture(GL_TEXTURE1);
     GLuint normtex_address = glGetUniformLocation(shader_program, "norm_tex");
@@ -145,6 +146,7 @@ void NormalMapShader::setNormalTexture(Texture& norm_tex) {
     glUniform1i(normtex_address, norm_tex.tex_unit);
 }
 
+// Render a model 3d object with lighting, texture, and normal mapping
 void NormalMapShader::render(Model3D& object, Camera& camera, PointLight& point_light, DirectionLight& dir_light) {
     glUseProgram(shader_program);
 
@@ -160,8 +162,8 @@ void NormalMapShader::render(Model3D& object, Camera& camera, PointLight& point_
     setTransform(transformation);
     setProjection(projection);
     setView(view);
-    setTexture(object.textures[0]);
-    setNormalTexture(object.textures[1]);
+    setTexture(object.textures[0]); // For the moment, only the first value will be used as the base texture
+    setNormalTexture(object.textures[1]); // Then, the second value will be used as the normal map
     setPointLight(point_light, camera.camera_pos);
     setDirectionLight(dir_light, camera.camera_pos);
 
