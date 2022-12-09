@@ -203,8 +203,6 @@ int main(void) {
 			skybox_shader.render(skybox, player.getActiveCam());
             glBlendFunc(GL_CONSTANT_COLOR, GL_ONE_MINUS_SRC_ALPHA);
 
-            
-
             /* RENDERING MODELS WITH THEIR APPROPRIATE SHADERS */
             texlighting_shader.render(crab, player.getActiveCam(), player.front_light, dlight, color_green);
             texlighting_shader.render(lobster, player.getActiveCam(), player.front_light, dlight, color_green);
