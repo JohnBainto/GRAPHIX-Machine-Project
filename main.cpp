@@ -174,7 +174,7 @@ int main(void) {
     /* ENABLES OPENGL BLENDING FUNCTION */
     glEnable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
-	glBlendColor(0.012, 1.000, 0.043, 1.000);
+	glBlendColor(0.f, 1.f, 0.f, 1.f);
 
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window)) {
@@ -187,8 +187,9 @@ int main(void) {
             normalmap_shader.render(player.sub_model, player.getActiveCam(), player.front_light, dlight);
         }
         else {
-			glBlendFuncSeparate(GL_CONSTANT_COLOR, GL_CONSTANT_COLOR, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glBlendFunc(GL_CONSTANT_COLOR, GL_CONSTANT_COLOR);
 			skybox_shader.render(skybox, player.getActiveCam());
+            glBlendFunc(GL_CONSTANT_COLOR, GL_ONE_MINUS_SRC_ALPHA);
         }
         
         /* RENDERING MODELS WITH THEIR APPROPRIATE SHADERS */
