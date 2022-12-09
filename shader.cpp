@@ -135,7 +135,7 @@ void TexLightingShader::render(Model3D& object, Camera& camera, PointLight& poin
     setDirectionLight(dir_light, camera.camera_pos);
 
     // Draw the elements
-    glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.count);
+    glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.vector_size);
 }
 
 // Set the normal texture
@@ -168,5 +168,36 @@ void NormalMapShader::render(Model3D& object, Camera& camera, PointLight& point_
     setDirectionLight(dir_light, camera.camera_pos);
 
     // Draw the elements
-    glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.count);
+    glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.vector_size);
+}
+
+void NormalMapShader::setNormalTexture(Texture& norm_tex) {
+    glActiveTexture(GL_TEXTURE1);
+    GLuint normtex_address = glGetUniformLocation(shader_program, "norm_tex");
+    glBindTexture(GL_TEXTURE_2D, norm_tex.texture);
+    glUniform1i(normtex_address, norm_tex.tex_unit);
+}
+
+void NormalMapShader::render(Model3D& object, Camera& camera, PointLight& point_light, DirectionLight& dir_light) {
+    glUseProgram(shader_program);
+
+    // Get transformation, projection, and view matrixes
+    glm::mat4 transformation = object.getTransformationMatrix();
+    glm::mat4 projection = camera.getProjectionMatrix();
+    glm::mat4 view = camera.getViewMatrix();
+
+    // Use the given VAO in the model object to draw
+    glBindVertexArray(object.vertex_attribs.VAO);
+
+    // Pass variables to shader
+    setTransform(transformation);
+    setProjection(projection);
+    setView(view);
+    setTexture(object.textures[0]);
+    setNormalTexture(object.textures[1]);
+    setPointLight(point_light, camera.camera_pos);
+    setDirectionLight(dir_light, camera.camera_pos);
+
+    // Draw the elements
+    glDrawArrays(GL_TRIANGLES, 0, object.vertex_attribs.vector_size);
 }
