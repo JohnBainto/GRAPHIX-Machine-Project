@@ -34,7 +34,7 @@ public:
 		front_light(light_intensity, pos, {1.f, 1.f, 1.f}, 0.1f, 0.3f, 80.f),
 		cam_3rdppov(15.f, pos, 60.f, 0.1f, 25.f),
 		cam_1stppov(pos, glm::vec3(pos.x, pos.y, pos.z - 1), 60.f, 0.1f, 100.f),
-		cam_birdppov(glm::vec3(pos.x, 5, pos.z)),
+		cam_birdppov(glm::vec3(pos.x, 5, pos.z), 100.f),
 		rot_offset(rot_offset),
 		point_offset(point_offset) {
 		sub_model.pos = pos;
@@ -58,8 +58,8 @@ public:
 			light_intensity = 1; 
 
 		switch(light_intensity) {
-			case 1: front_light.adjustStrength(1.f); break;
-			case 2: front_light.adjustStrength(10.f); break;
+			case 1: front_light.adjustStrength(.5f); break;
+			case 2: front_light.adjustStrength(5.f); break;
 			case 3: front_light.adjustStrength(1000.f); break;
 		}
 	}

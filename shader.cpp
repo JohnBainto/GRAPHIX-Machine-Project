@@ -114,8 +114,17 @@ void TexLightingShader::setDirectionLight(DirectionLight& light_source, glm::vec
     glUniform1f(dlight_spec_phong_loc, light_source.spec_phong);
 }
 
+void TexLightingShader::setColor(bool use_color, glm::vec4& tex) {
+    unsigned int use_color_loc = glGetUniformLocation(shader_program, "use_color");
+    glUniform1i(use_color_loc, use_color);
+
+    unsigned int color_loc = glGetUniformLocation(shader_program, "color");
+    glUniform4fv(color_loc, 1, glm::value_ptr(tex));
+}
+
 // Render a model 3d object with lighting and texture
-void TexLightingShader::render(Model3D& object, Camera& camera, PointLight& point_light, DirectionLight& dir_light) {
+void TexLightingShader::render(Model3D& object, Camera& camera, PointLight& point_light,
+    DirectionLight& dir_light, glm::vec4 color) {
     glUseProgram(shader_program);
 
     // Get transformation, projection, and view matrixes
@@ -130,6 +139,10 @@ void TexLightingShader::render(Model3D& object, Camera& camera, PointLight& poin
     setTransform(transformation);
     setProjection(projection);
     setView(view);
+    if (color.x != -1 && color.y != -1 && color.z != -1)
+        setColor(true, color);
+    else
+        setColor(false, color);
     setTexture(object.textures[0]); // For the moment, only the first value will be used as the base texture
     setPointLight(point_light, camera.camera_pos);
     setDirectionLight(dir_light, camera.camera_pos);

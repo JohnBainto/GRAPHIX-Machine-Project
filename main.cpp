@@ -139,7 +139,7 @@ int main(void) {
     };
 
     /* REPRESENTS AN INSTANCE OF A PLAYER ENTITY THAT CONTROLS THE GAME */
-    Player player(submarine, 90.f, 5.f);
+    Player player(submarine, 90.f, 4.5f);
 
     /* DIRECTION LIGHT FROM THE TOP OF THE OCEAN */
     DirectionLight dlight(
@@ -176,6 +176,8 @@ int main(void) {
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendColor(0.f, 1.f, 0.f, 1.f);
 
+    glm::vec4 color_green(0.f, 1.f, 0.f, 1.f);
+
     // Loop until the user closes the window
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -185,20 +187,30 @@ int main(void) {
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             skybox_shader.render(skybox, player.getActiveCam());
             normalmap_shader.render(player.sub_model, player.getActiveCam(), player.front_light, dlight);
+
+            /* RENDERING MODELS WITH THEIR APPROPRIATE SHADERS */
+            texlighting_shader.render(crab, player.getActiveCam(), player.front_light, dlight);
+            texlighting_shader.render(lobster, player.getActiveCam(), player.front_light, dlight);
+            texlighting_shader.render(turtle, player.getActiveCam(), player.front_light, dlight);
+            texlighting_shader.render(shark, player.getActiveCam(), player.front_light, dlight);
+            texlighting_shader.render(bomb, player.getActiveCam(), player.front_light, dlight);
+            texlighting_shader.render(fish, player.getActiveCam(), player.front_light, dlight);
         }
         else {
             glBlendFunc(GL_CONSTANT_COLOR, GL_CONSTANT_COLOR);
 			skybox_shader.render(skybox, player.getActiveCam());
             glBlendFunc(GL_CONSTANT_COLOR, GL_ONE_MINUS_SRC_ALPHA);
+
+            
+
+            /* RENDERING MODELS WITH THEIR APPROPRIATE SHADERS */
+            texlighting_shader.render(crab, player.getActiveCam(), player.front_light, dlight, color_green);
+            texlighting_shader.render(lobster, player.getActiveCam(), player.front_light, dlight, color_green);
+            texlighting_shader.render(turtle, player.getActiveCam(), player.front_light, dlight, color_green);
+            texlighting_shader.render(shark, player.getActiveCam(), player.front_light, dlight, color_green);
+            texlighting_shader.render(bomb, player.getActiveCam(), player.front_light, dlight, color_green);
+            texlighting_shader.render(fish, player.getActiveCam(), player.front_light, dlight, color_green);
         }
-        
-        /* RENDERING MODELS WITH THEIR APPROPRIATE SHADERS */
-        texlighting_shader.render(crab, player.getActiveCam(), player.front_light, dlight);
-        texlighting_shader.render(lobster, player.getActiveCam(), player.front_light, dlight);
-        texlighting_shader.render(turtle, player.getActiveCam(), player.front_light, dlight);
-        texlighting_shader.render(shark, player.getActiveCam(), player.front_light, dlight);
-        texlighting_shader.render(bomb, player.getActiveCam(), player.front_light, dlight);
-        texlighting_shader.render(fish, player.getActiveCam(), player.front_light, dlight);
         
         // Swap front and back buffers
         glfwSwapBuffers(window);
