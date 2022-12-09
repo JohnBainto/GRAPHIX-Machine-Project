@@ -32,7 +32,7 @@ public:
 		light_intensity(1),
 		sub_model(sub_model),
 		front_light(light_intensity, pos, {1.f, 1.f, 1.f}, 0.1f, 0.3f, 80.f),
-		cam_3rdppov(15.f, pos, 60.f, 0.1f, 25.f),
+		cam_3rdppov(15.f, pos, 60.f, 0.1f, 30.f),
 		cam_1stppov(pos, glm::vec3(pos.x, pos.y, pos.z - 1), 60.f, 0.1f, 100.f),
 		cam_birdppov(glm::vec3(pos.x, 5, pos.z), 100.f),
 		rot_offset(rot_offset),

@@ -171,6 +171,7 @@ int main(void) {
     // Set input controls to appropriate callback functions
     glfwSetKeyCallback(window, keyboardControl);
     glfwSetCursorPosCallback(window, mouseControl);
+    glfwSetMouseButtonCallback(window, mouseButtonControl);
 
     /* ENABLES OPENGL BLENDING FUNCTION */
     glEnable(GL_BLEND);

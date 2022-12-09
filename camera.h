@@ -123,7 +123,7 @@ public:
 
     OrthographicCamera(glm::vec3 pos, float zfar = 50.f, float znear = 0.1, float xmin = -10.f,
         float xmax = 10.f, float ymin = -10.f, float ymax = 10.f):
-        Camera(pos, glm::vec3(pos.x, -1, pos.z), znear, zfar), xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax) {}
+        Camera(pos, glm::vec3(pos.x, -1, pos.z), znear, zfar, {0, 0, 1}), xmin(xmin), xmax(xmax), ymin(ymin), ymax(ymax) {}
 
     // Gets the orthographical projection matrix of this camera instance's settings
     inline glm::mat4 getProjectionMatrix() {
@@ -136,4 +136,25 @@ public:
 		camera_center = camera_center + (new_pos - camera_pos);
 		camera_pos = new_pos;
 	}
+
+    // Tilt view
+    inline void tiltView(float x, float z) {
+        camera_center.x -= x;
+        camera_center.z -= z;
+        glm::vec3 offset = camera_center - camera_pos;
+
+        if (offset.x < -3)
+            camera_center.x = camera_pos.x - 3;
+        if (offset.x > 3)
+            camera_center.x = camera_pos.x + 3;
+        if (offset.z < -3)
+            camera_center.z = camera_pos.z - 3;
+        if (offset.z > 3)
+            camera_center.z = camera_pos.z + 3;
+    }
+
+    // Makes the camera look dirctly down
+    inline void lookDown() {
+        camera_center = glm::vec3(camera_pos.x, -1, camera_pos.z);
+    }
 };
