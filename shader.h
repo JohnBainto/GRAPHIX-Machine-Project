@@ -51,6 +51,7 @@ public:
         glLinkProgram(shader_program);
     }
 
+    // Deconstructor to free shader program
     ~Shader() {
         glDeleteShader(vertex_shader);
         glDeleteShader(fragment_shader);
@@ -67,16 +68,19 @@ public:
     void setProjection(glm::mat4& projection_matrix);
 };
 
+// Shader program for rendering the skybox
 class SkyboxShader: public Shader {
 public:
     SkyboxShader(const char* vert_path, const char* frag_path): Shader(vert_path, frag_path) {}
 
+    // Delete the set transformation function because it is not needed for rendering the skybox
     void setTransform(glm::mat4& transformation_matrix) = delete;
 
+    // Render a skybox object
     void render(Skybox& skybox, Camera& camera);
 };
 
-// Shader program that applies a texture, point lighting and directional lighting to an object
+// Shader program that applies a texture, point lighting, and directional lighting to an object
 class TexLightingShader: public Shader {
 public:
     TexLightingShader(const char* vert_path, const char* frag_path): Shader(vert_path, frag_path) {}
@@ -90,13 +94,11 @@ public:
     // Pass a direction light for the shader to use
     void setDirectionLight(DirectionLight& light_source, glm::vec3& camera_pos);
 
-    // Pass a direction light for the shader to use
-    void setTint(glm::vec4& color);
-
-    void render(Model3D& object, Camera& camera, PointLight& point_light,
-        DirectionLight& dir_light, glm::vec4 color = {1.f, 1.f, 1.f, 1.f});
+    // Render a model 3d object with lighting and texture
+    void render(Model3D& object, Camera& camera, PointLight& point_light, DirectionLight& dir_light);
 };
 
+// Shader program that applies a texture, normal mapping, point lighting, and directional lighting to an object
 class NormalMapShader: public TexLightingShader {
 public:
     NormalMapShader(const char* vert_path, const char* frag_path): TexLightingShader(vert_path, frag_path) {}
@@ -104,5 +106,6 @@ public:
     // Pass a texture variable for the shader to use
     void setNormalTexture(Texture& norm_tex);
 
+    // Render a model 3d object with lighting, texture, and normal mapping
     void render(Model3D& object, Camera& camera, PointLight& point_light, DirectionLight& dir_light);
 };

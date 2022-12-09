@@ -22,10 +22,8 @@ int main(void) {
     if (!glfwInit())
         return -1;
 
-    float screen_ht = 750, screen_wt = 750;
-
     // Create a windowed mode window and its OpenGL context
-    window = glfwCreateWindow(screen_ht, screen_wt, "Final Project 4", NULL, NULL);
+    window = glfwCreateWindow(SCREEN_HT, SCREEN_WT, "Final Project 4", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -35,25 +33,19 @@ int main(void) {
     glfwMakeContextCurrent(window);
     gladLoadGL();
 
-    glViewport(0, 0, screen_wt, screen_ht);
+    glViewport(0, 0, SCREEN_WT, SCREEN_HT);
 
     // Create shaders
     TexLightingShader texlighting_shader("Shaders/objshader.vert", "Shaders/objshader.frag");
-    ColorShader color_shader("Shaders/nolightshader.vert", "Shaders/nolightshader.frag");
     SkyboxShader skybox_shader("Shaders/skybox.vert", "Shaders/skybox.frag");
     NormalMapShader normalmap_shader("Shaders/normalmapped.vert", "Shaders/normalmapped.frag");
 
     /* PLAYER MODEL TEXTURE */
-
-    // Create textures
-    Texture firehydrant_tex("3D/firehydrant.png");
-    std::vector<Texture> firehydrant_textures{ firehydrant_tex };
-
     Texture submarine_tex("3D/player_submarine.png", 0);
     Texture submarine_normtex("3D/player_submarine_normal.png", 1);
     std::vector<Texture> submarine_textures {submarine_tex, submarine_normtex};
 
-    /* ENEMY MODEL TEXTURE */
+    /* ENEMY MODEL TEXTURES */
     Texture crab_tex("3D/crab.jpg");
     std::vector<Texture> crab_textures{ crab_tex };
 
@@ -72,8 +64,10 @@ int main(void) {
     Texture fish_tex("3D/fish.jpg");
     std::vector<Texture> fish_textures{ fish_tex };
 
+    /* PLAYER MODEL ATTRIBUTES */
     VertexAttribs submarine_res("3D/player_submarine.obj");
 
+    /* ENEMY MODEL ATTRIBUTES */
     VertexAttribs crab_res("3D/crab.obj");
 
     VertexAttribs lobster_res("3D/lobster.obj");
@@ -86,50 +80,52 @@ int main(void) {
 
     VertexAttribs fish_res("3D/fish.obj");
     
+    /* REPRESENTS AN INSTANCE OF A PLAYER SUBMARINE IN THE SCENE */
     Model3D submarine {
         submarine_res,          // Vertex information object
         submarine_textures,     // 
         {0.f, -30.f, 0.f},      // Position
         {0.f, 0.f, 0.f},              // XYZ rotation
-        {0.5f, 0.5f, 0.5f}         // XYZ scal
+        {0.5f, 0.5f, 0.5f}         // XYZ scale
     };
 
+    /* REPRESENTS AN INSTANCE OF THE ENEMY SUBMARINES IN THE SCENE */
     Model3D crab{
         crab_res,        // Vertex information object
         crab_textures,
-        {10.f, -8.f, 0.f},        // Position
-        {0.f, 135.f, 0.f},        // XYZ rotation
-        {0.15f, 0.15f, 0.15f}   // XYZ scale
+        {-10.f, -45.f, 0.f},        // Position
+        {90.f, 180.f, 0.f},        // XYZ rotation
+        {0.08f, 0.08f, 0.08f}   // XYZ scale
     };
 
     Model3D lobster{
         lobster_res,        // Vertex information object
         lobster_textures,
-        {-15.f, -20.f, 0.f},        // Position
-        {135.f, 90.f, 0.f},        // XYZ rotation
+        {-5.f, -45.f, -12.f},        // Position
+        {90.f, 180.f, 0.f},        // XYZ rotation
         {0.2f, 0.2f, 0.2f}   // XYZ scale
     };
 
     Model3D turtle{
         turtle_res,        // Vertex information object
         turtle_textures,
-        {20.f, -3.f, 0.f},        // Position
-        {0.f, 90.f, 0.f},        // XYZ rotation
+        {10.f, -14.f, 0.f},        // Position
+        {90.f, 180.f, 0.f},        // XYZ rotation
         {0.2f, 0.2f, 0.2f}   // XYZ scale
     };
 
     Model3D shark{
         shark_res,        // Vertex information object
         shark_textures,
-        {-23.f, -35.f, 0.f},        // Position
+        {15.f, -28.f, 8.f},        // Position
         {0.f, 0.f, 0.f},        // XYZ rotation
-        {0.1f, 0.1f, 0.1f}   // XYZ scale
+        {0.05f, 0.05f, 0.05f}   // XYZ scale
     };
 
     Model3D bomb{
         bomb_res,        // Vertex information object
         bomb_textures,
-        {-50.f, -10.f, 0.f},        // Position
+        {10.f, -33.f, -15.f},        // Position
         {0.f, 0.f, 0.f},        // XYZ rotation
         {0.5f, 0.5f, 0.5f}   // XYZ scale
     };
@@ -137,13 +133,15 @@ int main(void) {
     Model3D fish{
         fish_res,        // Vertex information object
         fish_textures,
-        {40.f, -6.f, 0.f},        // Position
+        {0.f, -9.f, -10.f},        // Position
         {0.f, 0.f, 0.f},        // XYZ rotation
         {0.3f, 0.3f, 0.3f}   // XYZ scale
     };
 
+    /* REPRESENTS AN INSTANCE OF A PLAYER ENTITY THAT CONTROLS THE GAME */
     Player player(submarine, 90.f, 5.f);
 
+    /* DIRECTION LIGHT FROM THE TOP OF THE OCEAN */
     DirectionLight dlight(
         glm::vec3(0.f, 10.f, 0.f),     // Light source position
         glm::vec3(1.0f, 1.0f, 1.0f),    // Diffuse color
@@ -154,13 +152,14 @@ int main(void) {
         0.25f                             // Intensity
     );
 
+    /* FACES OF THE SKYBOX */
     const std::string face_skybox[] {
-        "Skybox/uw_rt.jpg",
-        "Skybox/uw_lf.jpg",
-        "Skybox/uw_up.jpg",
-        "Skybox/uw_dn.jpg",
-        "Skybox/uw_ft.jpg",
-        "Skybox/uw_bk.jpg"
+        "Skybox/uw_rt.jpg", // RIGHT
+        "Skybox/uw_lf.jpg", // LEFT
+        "Skybox/uw_up.jpg", // UP
+        "Skybox/uw_dn.jpg", // DOWN
+        "Skybox/uw_ft.jpg", // FRONT
+        "Skybox/uw_bk.jpg" // BACK
     };
 
     Skybox skybox(face_skybox);
@@ -171,8 +170,8 @@ int main(void) {
     // Set input controls to appropriate callback functions
     glfwSetKeyCallback(window, keyboardControl);
     glfwSetCursorPosCallback(window, mouseControl);
-    glfwSetMouseButtonCallback(window, mouseButtonControl);
 
+    /* ENABLES OPENGL BLENDING FUNCTION */
     glEnable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendColor(0.012, 1.000, 0.043, 1.000);
@@ -192,6 +191,7 @@ int main(void) {
 			skybox_shader.render(skybox, player.getActiveCam());
         }
         
+        /* RENDERING MODELS WITH THEIR APPROPRIATE SHADERS */
         texlighting_shader.render(crab, player.getActiveCam(), player.front_light, dlight);
         texlighting_shader.render(lobster, player.getActiveCam(), player.front_light, dlight);
         texlighting_shader.render(turtle, player.getActiveCam(), player.front_light, dlight);

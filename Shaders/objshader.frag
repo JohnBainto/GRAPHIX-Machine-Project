@@ -2,8 +2,6 @@
 #version 330 core //version
 uniform sampler2D tex0;
 
-uniform vec4 tint;
-
 uniform vec3 camera_pos;
 
 uniform vec3 plight_pos;
@@ -70,5 +68,5 @@ void main() {
 
 	FragColor = (vec4(specCol + diffuse + ambientCol, 1.0)
 		+ vec4(dlight_spec + dlight_diffuse + dlight_ambient, 1.0))
-		* texture(tex0, tex_coord); //* tint;
+		* texture(tex0, tex_coord);
 }
