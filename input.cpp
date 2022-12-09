@@ -18,6 +18,7 @@ void keyboardControl(GLFWwindow* window, int key, int scanCode, int action, int 
 				case GLFW_KEY_W: player->moveForward(amount); break;
 				case GLFW_KEY_Q: player->moveVertically(amount); break;
 				case GLFW_KEY_E: player->moveVertically(-amount); break;
+				case GLFW_KEY_1: player->is_third_ppov = !player->is_third_ppov; break;
 			}
 		}
 		// Otherwise, allow them to the orthographical camera
@@ -31,9 +32,6 @@ void keyboardControl(GLFWwindow* window, int key, int scanCode, int action, int 
 		}
 		// Toggle between camera modes and light intensities
         switch (key) {
-			case GLFW_KEY_1:
-				player->is_third_ppov = !player->is_third_ppov;
-				break;
 			case GLFW_KEY_2:	
 				player->is_ortho = !player->is_ortho;
 				// If the player is switching to orthographic view, reset the camera's position
