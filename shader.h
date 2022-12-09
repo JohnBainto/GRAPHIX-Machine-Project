@@ -107,6 +107,9 @@ class NormalMapShader: public TexLightingShader {
 public:
     NormalMapShader(const char* vert_path, const char* frag_path): TexLightingShader(vert_path, frag_path) {}
 
+    // Pass 2 texture variables for the shader to use
+    void setTexture(Texture& tex0, Texture& tex1);
+
     // Pass a texture variable for the shader to use
     void setNormalTexture(Texture& norm_tex);
 

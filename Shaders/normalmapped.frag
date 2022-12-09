@@ -1,6 +1,7 @@
 // Point light
 #version 330 core //version
 uniform sampler2D tex0;
+uniform sampler2D tex1;
 uniform sampler2D norm_tex;
 
 uniform vec3 camera_pos;
@@ -30,7 +31,15 @@ in mat3 TBN;
 out vec4 FragColor; //Returns a color, vec4 means RGBA
 
 void main() {
-	vec4 pixel_color = texture(tex0, tex_coord);
+	vec4 pixel_color;
+	vec4 color0 = texture(tex0, tex_coord);
+	vec4 color1 = texture(tex1, tex_coord);
+	
+	if (color1.a > 0.1)
+		pixel_color = color1 * color1.a + color0 * (1 - color1.a);
+	else
+		pixel_color = color0;
+
 	if (pixel_color.a < 0.1)
 		discard;
 

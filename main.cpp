@@ -42,8 +42,9 @@ int main(void) {
 
     /* PLAYER MODEL TEXTURE */
     Texture submarine_tex("3D/player_submarine.png", 0);
-    Texture submarine_normtex("3D/player_submarine_normal.png", 1);
-    std::vector<Texture> submarine_textures {submarine_tex, submarine_normtex};
+    Texture submarine_decaltex("3D/player_submarine_decal.png", 1);
+    Texture submarine_normtex("3D/player_submarine_normal.png", 2);
+    std::vector<Texture> submarine_textures {submarine_tex, submarine_decaltex, submarine_normtex};
 
     /* ENEMY MODEL TEXTURES */
     Texture crab_tex("3D/crab.jpg");

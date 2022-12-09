@@ -153,10 +153,22 @@ void TexLightingShader::render(Model3D& object, Camera& camera, PointLight& poin
 
 // Set the normal texture
 void NormalMapShader::setNormalTexture(Texture& norm_tex) {
-    glActiveTexture(GL_TEXTURE1);
+    glActiveTexture(GL_TEXTURE0 + norm_tex.tex_unit);
     GLuint normtex_address = glGetUniformLocation(shader_program, "norm_tex");
     glBindTexture(GL_TEXTURE_2D, norm_tex.texture);
     glUniform1i(normtex_address, norm_tex.tex_unit);
+}
+
+void NormalMapShader::setTexture(Texture& tex0, Texture& tex1) {
+    glActiveTexture(GL_TEXTURE0 + tex0.tex_unit);
+    GLuint tex0_address = glGetUniformLocation(shader_program, "tex0");
+    glBindTexture(GL_TEXTURE_2D, tex0.texture);
+    glUniform1i(tex0_address, tex0.tex_unit);
+
+    glActiveTexture(GL_TEXTURE0 + tex1.tex_unit);
+    GLuint tex1_address = glGetUniformLocation(shader_program, "tex1");
+    glBindTexture(GL_TEXTURE_2D, tex1.texture);
+    glUniform1i(tex1_address, tex1.tex_unit);
 }
 
 // Render a model 3d object with lighting, texture, and normal mapping
@@ -175,8 +187,8 @@ void NormalMapShader::render(Model3D& object, Camera& camera, PointLight& point_
     setTransform(transformation);
     setProjection(projection);
     setView(view);
-    setTexture(object.textures[0]); // For the moment, only the first value will be used as the base texture
-    setNormalTexture(object.textures[1]); // Then, the second value will be used as the normal map
+    setTexture(object.textures[0], object.textures[1]); 
+    setNormalTexture(object.textures[2]);
     setPointLight(point_light, camera.camera_pos);
     setDirectionLight(dir_light, camera.camera_pos);
 
