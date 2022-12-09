@@ -94,15 +94,15 @@ int main(void) {
         crab_res,        // Vertex information object
         crab_textures,
         {-10.f, -45.f, 0.f},        // Position
-        {0.f, 135.f, 0.f},        // XYZ rotation
-        {0.15f, 0.15f, 0.15f}   // XYZ scale
+        {90.f, 180.f, 0.f},        // XYZ rotation
+        {0.08f, 0.08f, 0.08f}   // XYZ scale
     };
 
     Model3D lobster{
         lobster_res,        // Vertex information object
         lobster_textures,
-        {-5.f, -45.f, 5.f},        // Position
-        {135.f, 90.f, 0.f},        // XYZ rotation
+        {-5.f, -45.f, -12.f},        // Position
+        {90.f, 180.f, 0.f},        // XYZ rotation
         {0.2f, 0.2f, 0.2f}   // XYZ scale
     };
 
@@ -110,7 +110,7 @@ int main(void) {
         turtle_res,        // Vertex information object
         turtle_textures,
         {10.f, -14.f, 0.f},        // Position
-        {0.f, 90.f, 0.f},        // XYZ rotation
+        {90.f, 180.f, 0.f},        // XYZ rotation
         {0.2f, 0.2f, 0.2f}   // XYZ scale
     };
 
@@ -125,7 +125,7 @@ int main(void) {
     Model3D bomb{
         bomb_res,        // Vertex information object
         bomb_textures,
-        {-20.f, -33.f, 10.f},        // Position
+        {10.f, -33.f, -15.f},        // Position
         {0.f, 0.f, 0.f},        // XYZ rotation
         {0.5f, 0.5f, 0.5f}   // XYZ scale
     };
@@ -133,7 +133,7 @@ int main(void) {
     Model3D fish{
         fish_res,        // Vertex information object
         fish_textures,
-        {20.f, -9.f, -10.f},        // Position
+        {0.f, -9.f, -10.f},        // Position
         {0.f, 0.f, 0.f},        // XYZ rotation
         {0.3f, 0.3f, 0.3f}   // XYZ scale
     };
